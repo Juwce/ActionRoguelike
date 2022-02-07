@@ -4,6 +4,7 @@
 #include "TExplosiveBarrel.h"
 
 #include "TMagicProjectile.h"
+#include "PhysicsEngine/RadialForceComponent.h"
 
 // Sets default values
 ATExplosiveBarrel::ATExplosiveBarrel()
@@ -12,16 +13,13 @@ ATExplosiveBarrel::ATExplosiveBarrel()
 	PrimaryActorTick.bCanEverTick = true;
 
 	StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>("StaticMeshComp");
-
 	StaticMeshComp->SetSimulatePhysics(true);
 	StaticMeshComp->SetCollisionProfileName("PhysicsActor");
-
-	ImpulseFalloff = ERadialImpulseFalloff::RIF_Constant;
-	ImpulseStrength = 1000.f;
-	ImpulseRadius = 100.f;
-	
 	SetRootComponent(StaticMeshComp);
 
+	RadialForceComp = CreateDefaultSubobject<URadialForceComponent>("RadialForceComp");
+	RadialForceComp->SetupAttachment(RootComponent);
+	
 }
 
 // Called when the game starts or when spawned
@@ -34,7 +32,7 @@ void ATExplosiveBarrel::BeginPlay()
 void ATExplosiveBarrel::Explode()
 {
 	const FVector Origin = StaticMeshComp->GetComponentLocation();
-	StaticMeshComp->AddRadialImpulse(Origin, ImpulseRadius, ImpulseStrength, ImpulseFalloff);
+	RadialForceComp->FireImpulse();
 }
 
 void ATExplosiveBarrel::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp,

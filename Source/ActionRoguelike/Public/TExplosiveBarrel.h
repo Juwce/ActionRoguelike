@@ -7,6 +7,7 @@
 #include "TExplosiveBarrel.generated.h"
 
 
+class URadialForceComponent;
 UCLASS()
 class ACTIONROGUELIKE_API ATExplosiveBarrel : public AActor
 {
@@ -33,10 +34,7 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* StaticMeshComp;
 
-	UPROPERTY(EditAnywhere)
-	float ImpulseStrength;
-	
-	UPROPERTY(EditAnywhere)
-	float ImpulseRadius;
+	UPROPERTY(VisibleAnywhere)
+	URadialForceComponent* RadialForceComp;
 
 };
