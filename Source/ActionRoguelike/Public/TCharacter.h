@@ -27,9 +27,13 @@ protected:
 	void MoveRight(float Value);
 
 	void PrimaryAttack();
+	void PrimaryAttack_TimeElapsed();
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Attack")
 	TSubclassOf<AActor> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	UAnimMontage* AttackAnim;
 
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComp;
@@ -39,6 +43,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	UTInteractionComponent* InteractionComp;
+
+	FTimerHandle TimerHandle_PrimaryAttack;
+
+	
 
 public:	
 	// Called every frame

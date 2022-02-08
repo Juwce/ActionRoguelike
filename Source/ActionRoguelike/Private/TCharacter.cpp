@@ -39,6 +39,15 @@ void ATCharacter::BeginPlay()
 
 }
 
+// Called every frame
+void ATCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	DrawDebugArrows();
+
+}
+
 void ATCharacter::MoveForward(float Value)
 {
 	FRotator ControlRot = GetControlRotation();
@@ -62,6 +71,13 @@ void ATCharacter::MoveRight(float Value)
 
 void ATCharacter::PrimaryAttack()
 {
+	PlayAnimMontage(AttackAnim);
+	
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ATCharacter::PrimaryAttack_TimeElapsed, 0.2f);
+}
+
+void ATCharacter::PrimaryAttack_TimeElapsed()
+{
 	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 	
 	FTransform SpawnTM = FTransform(GetControlRotation(), HandLocation);
@@ -71,15 +87,7 @@ void ATCharacter::PrimaryAttack()
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
-}
-
-// Called every frame
-void ATCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	DrawDebugArrows();
-
+	
 }
 
 // Called to bind functionality to input
