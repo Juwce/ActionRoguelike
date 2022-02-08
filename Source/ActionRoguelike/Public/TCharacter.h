@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "TCharacter.generated.h"
 
+class UTInteractionComponent;
 class UCameraComponent;
 class USpringArmComponent;
 
@@ -36,12 +37,17 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComp;
 
+	UPROPERTY(VisibleAnywhere)
+	UTInteractionComponent* InteractionComp;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void PrimaryInteract();
 	
 private:
 	void DrawDebugArrows();
