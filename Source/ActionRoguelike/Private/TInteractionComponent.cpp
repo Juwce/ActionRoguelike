@@ -51,18 +51,31 @@ void UTInteractionComponent::PrimaryInteract()
 	MyOwner->GetActorEyesViewPoint(EyesLocation, EyesRotation);
 
 	const FVector TraceEnd = EyesLocation + (EyesRotation.Vector() * MaxInteractDistance);
-	
-	FHitResult Hit;
-	bool bBlockingHit = GetWorld()->LineTraceSingleByObjectType(Hit, EyesLocation, TraceEnd, ObjectQueryParams);
 
-	AActor* HitActor = Hit.GetActor();
-	// Check the "U" TGameplayInterface when checking for Implementation
-	if (HitActor && HitActor->Implements<UTGameplayInterface>())
+	// Takes a sphere and "moves" it from start to end, stopping at its first blocking hit
+	TArray<FHitResult> Hits;
+	
+	FCollisionShape Shape;
+	float Radius = 30.f;
+	Shape.SetSphere(Radius);
+	
+	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, EyesLocation, TraceEnd, FQuat::Identity, ObjectQueryParams, Shape);
+
+	for (FHitResult Hit : Hits)
 	{
-		APawn* MyPawn = Cast<APawn>(MyOwner);
-		// Call interface functions with the "I" TGameplayInterface
-		// BlueprintNative UFUNCTIONs are Static functions prefixed with "Execute_" and called as follows:
-		ITGameplayInterface::Execute_Interact(HitActor, MyPawn);
+		AActor* HitActor = Hit.GetActor();
+		DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 32, FColor::Green, false, 2.f, 0, 0.5f);
+		
+		// Check the "U" TGameplayInterface when checking for Implementation
+		if (HitActor && HitActor->Implements<UTGameplayInterface>())
+		{
+			APawn* MyPawn = Cast<APawn>(MyOwner);
+			// Call interface functions with the "I" TGameplayInterface
+			// BlueprintNative UFUNCTIONs are Static functions prefixed
+			// with "Execute_" and called as follows:
+			ITGameplayInterface::Execute_Interact(HitActor, MyPawn);
+			break;
+		}
 	}
 
 	const FColor DebugLineColor = bBlockingHit ? FColor::Green : FColor::Red;
