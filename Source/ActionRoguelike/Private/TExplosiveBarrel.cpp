@@ -41,7 +41,8 @@ void ATExplosiveBarrel::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UP
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 
 	Explode();
-	UE_LOG(LogTemp, Warning, TEXT("Boom %s"), *Other->GetName());
+	UE_LOG(LogTemp, Warning, TEXT("Boom: Actor %s"), *Other->GetName());
+	UE_LOG(LogTemp, Warning, TEXT("Boom: Component %s"), *OtherComp->GetName());
 }
 
 // Called every frame
