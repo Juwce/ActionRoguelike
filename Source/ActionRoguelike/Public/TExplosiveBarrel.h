@@ -22,7 +22,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
-	
+
+	UFUNCTION(BlueprintCallable)
 	void Explode();
 
 	ERadialImpulseFalloff ImpulseFalloff;
