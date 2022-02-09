@@ -14,12 +14,17 @@ ATExplosiveBarrel::ATExplosiveBarrel()
 
 	StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>("StaticMeshComp");
 	StaticMeshComp->SetSimulatePhysics(true);
-	StaticMeshComp->SetCollisionProfileName("PhysicsActor");
+	StaticMeshComp->SetCollisionProfileName(UCollisionProfile::PhysicsActor_ProfileName);
 	SetRootComponent(StaticMeshComp);
 
 	RadialForceComp = CreateDefaultSubobject<URadialForceComponent>("RadialForceComp");
 	RadialForceComp->SetupAttachment(RootComponent);
-	
+
+	// Optional, ignores 'Mass' of other objects (if false, the strength will need to be increased significantly to push
+	// most objects, depending on their mass)
+	RadialForceComp->bImpulseVelChange = true;
+	RadialForceComp->Radius = 750.f;
+	RadialForceComp->ImpulseStrength = 2500.f;
 }
 
 // Called when the game starts or when spawned
@@ -31,7 +36,6 @@ void ATExplosiveBarrel::BeginPlay()
 
 void ATExplosiveBarrel::Explode()
 {
-	const FVector Origin = StaticMeshComp->GetComponentLocation();
 	RadialForceComp->FireImpulse();
 }
 
