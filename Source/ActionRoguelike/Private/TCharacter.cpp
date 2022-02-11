@@ -77,7 +77,7 @@ void ATCharacter::PrimaryAttack()
 }
 
 void ATCharacter::PrimaryAttack_TimeElapsed()
-{
+{t 
 	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 	
 	FTransform SpawnTM = FTransform(GetControlRotation(), HandLocation);
