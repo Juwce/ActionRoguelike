@@ -14,7 +14,11 @@ ATCharacter::ATCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	bDrawDebugArrows = false;
 
+	/*
+	 * Camera
+	 */
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>("SpringArmComp");
 	// Rotate the camera boom with the controller
 	SpringArmComp->bUsePawnControlRotation = true;
@@ -23,13 +27,20 @@ ATCharacter::ATCharacter()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>("CameraComp");
 	CameraComp->SetupAttachment(SpringArmComp);
 
+	/*
+	 * Interaction
+	 */
 	InteractionComp = CreateDefaultSubobject<UTInteractionComponent>("InteractionComp");
+	SetTickGroup(ETickingGroup::TG_PostUpdateWork); // ensure camera is updated before we tick
 
+	MaxAttackTraceDistance = 3000.f;
+
+	/*
+	 * Movement Controller
+	 */
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	
 	// Don't move the character up and down when the camera rotates
 	bUseControllerRotationYaw = false;
-
 }
 
 // Called when the game starts or when spawned
@@ -44,7 +55,7 @@ void ATCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	DrawDebugArrows();
+	if (bDrawDebugArrows) { DrawDebugArrows(); }
 
 }
 
@@ -77,18 +88,45 @@ void ATCharacter::PrimaryAttack()
 }
 
 void ATCharacter::PrimaryAttack_TimeElapsed()
-{t 
-	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-	
-	FTransform SpawnTM = FTransform(GetControlRotation(), HandLocation);
+{
+	const FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+
+	FVector Target;
+	ComputeAttackTarget(Target);
+
+	const FRotator LookAtRotation = FRotationMatrix::MakeFromX(Target - HandLocation).Rotator();
+	const FTransform SpawnTM = FTransform(LookAtRotation, HandLocation);
 
 	FActorSpawnParameters SpawnParams;
-	// ignore collision and other checks when spawning the projectile
+	// ignore spawning the projectile
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.Instigator = this;
 
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 	
+}
+
+// Target the first thing some distance in front of the camera. If we find nothing, target the max distance
+bool ATCharacter::ComputeAttackTarget(FVector& TargetLocation)
+{
+	const FVector CameraLocation = CameraComp->GetComponentLocation();
+	const FVector CameraForward = CameraComp->GetForwardVector();
+	const FVector TraceEnd = CameraLocation + (CameraForward * MaxAttackTraceDistance);
+	
+	FCollisionObjectQueryParams ObjectQueryParams;
+	ObjectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldDynamic);
+	ObjectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldStatic);
+	
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(this);
+	
+	FHitResult Hit;
+	bool bBlockingHit = GetWorld()->LineTraceSingleByObjectType(
+		Hit, CameraLocation, TraceEnd, ObjectQueryParams, CollisionQueryParams);
+
+	TargetLocation = bBlockingHit ? Hit.Location : TraceEnd;
+
+	return bBlockingHit;
 }
 
 // Called to bind functionality to input

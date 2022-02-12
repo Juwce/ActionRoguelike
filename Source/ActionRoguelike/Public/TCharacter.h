@@ -29,24 +29,31 @@ protected:
 	void PrimaryAttack();
 	void PrimaryAttack_TimeElapsed();
 
-	UPROPERTY(EditAnywhere, Category = "Attack")
+	UFUNCTION(BlueprintCallable)
+	bool ComputeAttackTarget(FVector& TargetLocation);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
 	TSubclassOf<AActor> ProjectileClass;
 
-	UPROPERTY(EditAnywhere, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
 	UAnimMontage* AttackAnim;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	USpringArmComponent* SpringArmComp;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UCameraComponent* CameraComp;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UTInteractionComponent* InteractionComp;
 
-	FTimerHandle TimerHandle_PrimaryAttack;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bDrawDebugArrows;
 
-	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MaxAttackTraceDistance;
+
+	FTimerHandle TimerHandle_PrimaryAttack;
 
 public:	
 	// Called every frame
