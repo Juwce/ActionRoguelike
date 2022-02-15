@@ -27,13 +27,21 @@ protected:
 	void MoveRight(float Value);
 
 	void PrimaryAttack();
+	void SecondaryAttack();
+
 	void PrimaryAttack_TimeElapsed();
+	void SecondaryAttack_TimeElapsed();
+
+	void Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass);
 
 	UFUNCTION(BlueprintCallable)
 	bool ComputeAttackTarget(FVector& TargetLocation);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
-	TSubclassOf<AActor> ProjectileClass;
+	TSubclassOf<AActor> PrimaryProjectileClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
+	TSubclassOf<AActor> SecondaryProjectileClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
 	UAnimMontage* AttackAnim;
@@ -53,7 +61,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MaxAttackTraceDistance;
 
-	FTimerHandle TimerHandle_PrimaryAttack;
+	FTimerHandle TimerHandle_Attack;
 
 public:	
 	// Called every frame

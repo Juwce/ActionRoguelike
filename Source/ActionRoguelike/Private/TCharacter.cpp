@@ -83,11 +83,26 @@ void ATCharacter::MoveRight(float Value)
 void ATCharacter::PrimaryAttack()
 {
 	PlayAnimMontage(AttackAnim);
-	
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ATCharacter::PrimaryAttack_TimeElapsed, 0.2f);
+	GetWorldTimerManager().SetTimer(TimerHandle_Attack, this, &ATCharacter::PrimaryAttack_TimeElapsed, 0.2f);
+}
+
+void ATCharacter::SecondaryAttack()
+{
+	PlayAnimMontage(AttackAnim);
+	GetWorldTimerManager().SetTimer(TimerHandle_Attack, this, &ATCharacter::SecondaryAttack_TimeElapsed, 0.2f);
 }
 
 void ATCharacter::PrimaryAttack_TimeElapsed()
+{
+	Attack_TimeElapsed(PrimaryProjectileClass);
+}
+
+void ATCharacter::SecondaryAttack_TimeElapsed()
+{
+	Attack_TimeElapsed(SecondaryProjectileClass);
+}
+
+void ATCharacter::Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass)
 {
 	const FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 
@@ -103,7 +118,6 @@ void ATCharacter::PrimaryAttack_TimeElapsed()
 	SpawnParams.Instigator = this;
 
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
-	
 }
 
 // Target the first thing some distance in front of the camera. If we find nothing, target the max distance
@@ -139,6 +153,7 @@ void ATCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAxis("TurnLeft", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this,  &ATCharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction("SecondaryAttack", IE_Pressed, this,  &ATCharacter::SecondaryAttack);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, InteractionComp, &UTInteractionComponent::PrimaryInteract);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this,  &ACharacter::Jump);
 }
