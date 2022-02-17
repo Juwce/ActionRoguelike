@@ -4,6 +4,7 @@
 #include "TCharacter.h"
 
 #include "DrawDebugHelpers.h"
+#include "TDashProjectile.h"
 #include "TInteractionComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
