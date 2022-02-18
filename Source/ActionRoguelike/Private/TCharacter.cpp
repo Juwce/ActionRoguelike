@@ -60,6 +60,22 @@ void ATCharacter::Tick(float DeltaTime)
 
 }
 
+// Called to bind functionality to input
+void ATCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAxis("MoveForward", this, &ATCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ATCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("TurnLeft", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this,  &ATCharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction("SecondaryAttack", IE_Pressed, this,  &ATCharacter::SecondaryAttack);
+	PlayerInputComponent->BindAction("TertiaryAttack", IE_Pressed, this,  &ATCharacter::TertiaryAttack);
+	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, InteractionComp, &UTInteractionComponent::PrimaryInteract);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this,  &ACharacter::Jump);
+}
+
 void ATCharacter::MoveForward(float Value)
 {
 	FRotator ControlRot = GetControlRotation();
@@ -84,26 +100,31 @@ void ATCharacter::MoveRight(float Value)
 void ATCharacter::PrimaryAttack()
 {
 	PlayAnimMontage(AttackAnim);
-	GetWorldTimerManager().SetTimer(TimerHandle_Attack, this, &ATCharacter::PrimaryAttack_TimeElapsed, 0.2f);
+	Attack_StartTimer(PrimaryProjectileClass);
 }
 
 void ATCharacter::SecondaryAttack()
 {
 	PlayAnimMontage(AttackAnim);
-	GetWorldTimerManager().SetTimer(TimerHandle_Attack, this, &ATCharacter::SecondaryAttack_TimeElapsed, 0.2f);
+	Attack_StartTimer(SecondaryProjectileClass);
 }
 
-void ATCharacter::PrimaryAttack_TimeElapsed()
+void ATCharacter::TertiaryAttack()
 {
-	Attack_TimeElapsed(PrimaryProjectileClass);
+	PlayAnimMontage(AttackAnim);
+	Attack_StartTimer(TertiaryProjectileClass);
 }
 
-void ATCharacter::SecondaryAttack_TimeElapsed()
+void ATCharacter::Attack_StartTimer(const TSubclassOf<ATProjectile>& ProjectileClass)
 {
-	Attack_TimeElapsed(SecondaryProjectileClass);
+	FTimerDelegate TimerDel;
+	TimerDel.BindLambda([&]() {
+		Attack_TimeElapsed(ProjectileClass);
+	});
+	GetWorldTimerManager().SetTimer(TimerHandle_Attack, TimerDel, 0.2f, false);
 }
 
-void ATCharacter::Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass)
+void ATCharacter::Attack_TimeElapsed(const TSubclassOf<ATProjectile>& ProjectileClass)
 {
 	const FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 
@@ -118,7 +139,7 @@ void ATCharacter::Attack_TimeElapsed(TSubclassOf<AActor> ProjectileClass)
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.Instigator = this;
 
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+ 	GetWorld()->SpawnActor<ATProjectile>(ProjectileClass, SpawnTM, SpawnParams);
 }
 
 // Target the first thing some distance in front of the camera. If we find nothing, target the max distance
@@ -142,21 +163,6 @@ bool ATCharacter::ComputeAttackTarget(FVector& TargetLocation)
 	TargetLocation = bBlockingHit ? Hit.Location : TraceEnd;
 
 	return bBlockingHit;
-}
-
-// Called to bind functionality to input
-void ATCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAxis("MoveForward", this, &ATCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ATCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("TurnLeft", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this,  &ATCharacter::PrimaryAttack);
-	PlayerInputComponent->BindAction("SecondaryAttack", IE_Pressed, this,  &ATCharacter::SecondaryAttack);
-	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, InteractionComp, &UTInteractionComponent::PrimaryInteract);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this,  &ACharacter::Jump);
 }
 
 void ATCharacter::PrimaryInteract()
