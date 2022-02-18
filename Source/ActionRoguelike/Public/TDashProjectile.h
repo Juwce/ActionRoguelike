@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TMagicProjectile.h"
 #include "TProjectile.h"
 #include "TDashProjectile.generated.h"
 
@@ -22,8 +21,19 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
 
-	void Explode();
+	void QueueTeleport();
+	void TeleportInstigator();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DelayBetweenSpawnAndExplosion;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DelayBetweenExplosionAndTeleport;
+
+private:
+	FTimerHandle TimerHandle;
 
 public:	
 	// Called every frame
