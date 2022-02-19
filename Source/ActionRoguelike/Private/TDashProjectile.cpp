@@ -3,6 +3,8 @@
 
 #include "TDashProjectile.h"
 
+#include "DrawDebugHelpers.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -50,6 +52,7 @@ void ATDashProjectile::QueueTeleport()
 {
 	ExplosionEffectComp->Activate();
 	MovementComp->StopMovementImmediately();
+	SphereComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	
 	GetWorldTimerManager().SetTimer(
 		TimerHandle, this, &ATDashProjectile::TeleportInstigator, DelayBetweenExplosionAndTeleport, false);
@@ -60,7 +63,8 @@ void ATDashProjectile::TeleportInstigator()
 	const FVector TeleportLocation = SphereComp->GetComponentLocation();
 	const FRotator TeleportRotation = GetInstigator()->GetActorRotation();
 	
-	GetInstigator()->TeleportTo(TeleportLocation, TeleportRotation);
+	GetInstigator()->TeleportTo(TeleportLocation, TeleportRotation, false, false);
+	
 	Destroy();
 }
 
