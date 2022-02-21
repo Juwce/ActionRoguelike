@@ -23,17 +23,28 @@ public:
 protected:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	/*
+	 * Movement
+	 */
 	void MoveForward(float Value);
 	void MoveRight(float Value);
-	void PrimaryInteract();
 
+	/*
+	 * Interaction
+	 */
+	
+	void PrimaryInteract();
+	
+	/*
+	 * Combat
+	 */
 	void PrimaryAttack();
 	void SecondaryAttack();
 	void TertiaryAttack();
@@ -44,6 +55,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	bool ComputeAttackTarget(FVector& TargetLocation);
 
+	/*
+	 * Components
+	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	USpringArmComponent* SpringArmComp;
 
@@ -64,17 +78,21 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
 	TSubclassOf<ATProjectile> TertiaryProjectileClass;
-	
+
+	/*
+	 * Misc
+	 */
+	// Max distance away from the camera to trace for an attack target
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MaxAttackTraceDistance;
 
+	// Whether or not to draw debug arrows for Controller & Actor forward vectors
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bDrawDebugArrows;
 
 private:
-	FTimerHandle TimerHandle_Attack;
-
-private:
 	void DrawDebugArrows();
+
+	FTimerHandle TimerHandle_Attack;
 
 };

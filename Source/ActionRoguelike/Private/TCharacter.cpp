@@ -44,13 +44,6 @@ ATCharacter::ATCharacter()
 	bUseControllerRotationYaw = false;
 }
 
-// Called when the game starts or when spawned
-void ATCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-
-}
-
 // Called every frame
 void ATCharacter::Tick(float DeltaTime)
 {
@@ -76,6 +69,13 @@ void ATCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this,  &ACharacter::Jump);
 }
 
+// Called when the game starts or when spawned
+void ATCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+}
+
 void ATCharacter::MoveForward(float Value)
 {
 	FRotator ControlRot = GetControlRotation();
@@ -95,6 +95,14 @@ void ATCharacter::MoveRight(float Value)
 	FVector RightVector = FRotationMatrix(ControlRot).GetScaledAxis(EAxis::Y);
 	
 	AddMovementInput(RightVector, Value);
+}
+
+void ATCharacter::PrimaryInteract()
+{
+	if (InteractionComp)
+	{
+		InteractionComp->PrimaryInteract();
+	}
 }
 
 void ATCharacter::PrimaryAttack()
@@ -163,14 +171,6 @@ bool ATCharacter::ComputeAttackTarget(FVector& TargetLocation)
 	TargetLocation = bBlockingHit ? Hit.Location : TraceEnd;
 
 	return bBlockingHit;
-}
-
-void ATCharacter::PrimaryInteract()
-{
-	if (InteractionComp)
-	{
-		InteractionComp->PrimaryInteract();
-	}
 }
 
 void ATCharacter::DrawDebugArrows()
