@@ -4,6 +4,7 @@
 #include "TCharacter.h"
 
 #include "DrawDebugHelpers.h"
+#include "TAttributeComponent.h"
 #include "TDashProjectile.h"
 #include "TInteractionComponent.h"
 #include "Camera/CameraComponent.h"
@@ -18,29 +19,29 @@ ATCharacter::ATCharacter()
 	bDrawDebugArrows = false;
 
 	/*
-	 * Camera
+	 * Camera Setup
 	 */
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>("SpringArmComp");
-	// Rotate the camera boom with the controller
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->SetupAttachment(RootComponent);
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>("CameraComp");
 	CameraComp->SetupAttachment(SpringArmComp);
-
-	/*
-	 * Interaction
-	 */
+	
 	InteractionComp = CreateDefaultSubobject<UTInteractionComponent>("InteractionComp");
-	SetTickGroup(ETickingGroup::TG_PostUpdateWork); // ensure camera is updated before we tick
+	
+	AttributeComp = CreateDefaultSubobject<UTAttributeComponent>("AttributeComp");
+
+	// Tick after the camera position has been fully updated. This is necessary for camera-based traces to be true
+	// to what the player is seeing.
+	// https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Actors/Ticking/#tickgrouporder
+	SetTickGroup(ETickingGroup::TG_PostUpdateWork);
 
 	MaxAttackTraceDistance = 3000.f;
 
-	/*
-	 * Movement Controller
-	 */
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	// Don't move the character up and down when the camera rotates
+	
+	// Don't apply up/down rotation to the character when the camera rotates
 	bUseControllerRotationYaw = false;
 }
 
@@ -50,7 +51,6 @@ void ATCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (bDrawDebugArrows) { DrawDebugArrows(); }
-
 }
 
 // Called to bind functionality to input
@@ -134,20 +134,23 @@ void ATCharacter::Attack_StartTimer(const TSubclassOf<ATProjectile>& ProjectileC
 
 void ATCharacter::Attack_TimeElapsed(const TSubclassOf<ATProjectile>& ProjectileClass)
 {
-	const FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+	if (ensure(ProjectileClass))
+	{
+		const FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 
-	FVector Target;
-	ComputeAttackTarget(Target);
+		FVector Target;
+		ComputeAttackTarget(Target);
 
-	const FRotator LookAtRotation = FRotationMatrix::MakeFromX(Target - HandLocation).Rotator();
-	const FTransform SpawnTM = FTransform(LookAtRotation, HandLocation);
+		const FRotator LookAtRotation = FRotationMatrix::MakeFromX(Target - HandLocation).Rotator();
+		const FTransform SpawnTM = FTransform(LookAtRotation, HandLocation);
 
-	FActorSpawnParameters SpawnParams;
-	// ignore spawning the projectile
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.Instigator = this;
+		FActorSpawnParameters SpawnParams;
+		// ignore spawning the projectile
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.Instigator = this;
 
- 	GetWorld()->SpawnActor<ATProjectile>(ProjectileClass, SpawnTM, SpawnParams);
+		GetWorld()->SpawnActor<ATProjectile>(ProjectileClass, SpawnTM, SpawnParams);
+	}
 }
 
 // Target the first thing some distance in front of the camera. If we find nothing, target the max distance

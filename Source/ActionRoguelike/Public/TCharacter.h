@@ -7,9 +7,10 @@
 #include "TCharacter.generated.h"
 
 class ATProjectile;
-class UTInteractionComponent;
 class UCameraComponent;
 class USpringArmComponent;
+class UTAttributeComponent;
+class UTInteractionComponent;
 
 UCLASS()
 class ACTIONROGUELIKE_API ATCharacter : public ACharacter
@@ -39,7 +40,6 @@ protected:
 	/*
 	 * Interaction
 	 */
-	
 	void PrimaryInteract();
 	
 	/*
@@ -79,8 +79,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
 	TSubclassOf<ATProjectile> TertiaryProjectileClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	UTAttributeComponent* AttributeComp;
+
 	/*
-	 * Misc
+	 * Misc Properties
 	 */
 	// Max distance away from the camera to trace for an attack target
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
