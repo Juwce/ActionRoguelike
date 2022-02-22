@@ -11,12 +11,15 @@ UTAttributeComponent::UTAttributeComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
+	Health = 100.f;
 }
 
 bool UTAttributeComponent::ApplyHealthChange(float Delta)
 {
 	Health += Delta;
 
+	OnHealthChanged.Broadcast(nullptr, this, Health, Delta);
+	
 	return true;
 }
 

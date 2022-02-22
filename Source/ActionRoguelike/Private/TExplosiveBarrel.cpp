@@ -3,6 +3,8 @@
 
 #include "TExplosiveBarrel.h"
 
+#include "TAttributeComponent.h"
+#include "TCharacter.h"
 #include "TMagicProjectile.h"
 #include "PhysicsEngine/RadialForceComponent.h"
 
@@ -25,6 +27,9 @@ ATExplosiveBarrel::ATExplosiveBarrel()
 	RadialForceComp->bImpulseVelChange = true;
 	RadialForceComp->Radius = 750.f;
 	RadialForceComp->ImpulseStrength = 2500.f;
+
+	bCanExplode = true;
+	ExplosionRetriggerDelaySeconds = 1.f;
 }
 
 // Called when the game starts or when spawned
@@ -44,15 +49,34 @@ void ATExplosiveBarrel::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UP
 {
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 
-	Explode();
-	UE_LOG(LogTemp, Warning, TEXT("Boom: Actor %s"), *Other->GetName());
-	UE_LOG(LogTemp, Warning, TEXT("Boom: Component %s"), *OtherComp->GetName());
+	if (bCanExplode)
+	{
+		Explode();
+
+		// TODO: have the impulse apply the damage instead
+		ATCharacter* TCharacter = Cast<ATCharacter>(Other);
+		if (TCharacter)
+		{
+			UTAttributeComponent* AttributeComp =Cast<UTAttributeComponent>(
+				TCharacter->GetComponentByClass(UTAttributeComponent::StaticClass()));
+
+			AttributeComp->ApplyHealthChange(-50.f); // TODO: make member variable
+		}
+
+		bCanExplode = false;
+		GetWorldTimerManager().SetTimer(
+			ExplosionDelayTimerHandle, this, &ATExplosiveBarrel::EnableExplode, ExplosionRetriggerDelaySeconds, false);
+		
+	}
 }
 
 // Called every frame
 void ATExplosiveBarrel::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
+void ATExplosiveBarrel::EnableExplode()
+{
+	bCanExplode = true;
+}

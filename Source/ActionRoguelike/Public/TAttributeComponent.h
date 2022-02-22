@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "TAttributeComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, InstigatorActor, UTAttributeComponent*, OwningComp, float, NewHealth, float, Delta);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ACTIONROGUELIKE_API UTAttributeComponent : public UActorComponent
@@ -27,5 +28,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool ApplyHealthChange(float Delta);
+
+	UPROPERTY(BlueprintAssignable)
+	FOnHealthChanged OnHealthChanged;
 		
 };

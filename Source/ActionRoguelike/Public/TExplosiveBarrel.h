@@ -26,6 +26,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void Explode();
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float ExplosionRetriggerDelaySeconds;
+
 	ERadialImpulseFalloff ImpulseFalloff;
 
 public:	
@@ -38,4 +41,9 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	URadialForceComponent* RadialForceComp;
 
+private:
+	FTimerHandle ExplosionDelayTimerHandle;
+
+	void EnableExplode();
+	bool bCanExplode;
 };
