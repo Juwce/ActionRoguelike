@@ -23,3 +23,8 @@ bool UTAttributeComponent::ApplyHealthChange(float Delta)
 	return true;
 }
 
+bool UTAttributeComponent::IsAlive() const
+{
+	return Health > 0.f;
+}
+

@@ -24,6 +24,8 @@ public:
 protected:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void PostInitializeComponents() override;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -54,6 +56,12 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	bool ComputeAttackTarget(FVector& TargetLocation);
+
+	/*
+	 * Attributes, Life and Death
+	 */
+	UFUNCTION()
+	void OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth, float Delta);
 
 	/*
 	 * Components

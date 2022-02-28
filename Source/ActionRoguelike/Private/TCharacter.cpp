@@ -48,6 +48,13 @@ void ATCharacter::Tick(float DeltaTime)
 	if (bDrawDebugArrows) { DrawDebugArrows(); }
 }
 
+void ATCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	AttributeComp->OnHealthChanged.AddDynamic(this, &ATCharacter::OnHealthChanged);
+}
+
 // Called to bind functionality to input
 void ATCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -167,6 +174,16 @@ bool ATCharacter::ComputeAttackTarget(FVector& TargetLocation)
 
 	TargetLocation = bBlockingHit ? Hit.Location : TraceEnd;
 	return bBlockingHit;
+}
+
+void ATCharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth,
+	float Delta)
+{
+	if (NewHealth <= 0.f && Delta < 0.f)
+	{
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		DisableInput(PC);
+	}
 }
 
 void ATCharacter::DrawDebugArrows()
