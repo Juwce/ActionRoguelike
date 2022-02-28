@@ -17,6 +17,8 @@ ATMagicProjectile::ATMagicProjectile()
 void ATMagicProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
 }
 
 void ATMagicProjectile::PostInitializeComponents()

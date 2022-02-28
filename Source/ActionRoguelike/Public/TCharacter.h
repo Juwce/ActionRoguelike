@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "TCharacter.generated.h"
 
-class ATProjectile;
+class ATProjectileBase;
 class UCameraComponent;
 class USpringArmComponent;
 class UTAttributeComponent;
@@ -49,8 +49,8 @@ protected:
 	void SecondaryAttack();
 	void TertiaryAttack();
 
-	void Attack_StartTimer(const TSubclassOf<ATProjectile>& ProjectileClass);
-	void Attack_TimeElapsed(const TSubclassOf<ATProjectile>& ProjectileClass);
+	void Attack_StartTimer(const TSubclassOf<ATProjectileBase>& ProjectileClass);
+	void Attack_TimeElapsed(const TSubclassOf<ATProjectileBase>& ProjectileClass);
 
 	UFUNCTION(BlueprintCallable)
 	bool ComputeAttackTarget(FVector& TargetLocation);
@@ -71,13 +71,13 @@ protected:
 	UAnimMontage* AttackAnim;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
-	TSubclassOf<ATProjectile> PrimaryProjectileClass;
+	TSubclassOf<ATProjectileBase> PrimaryProjectileClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
-	TSubclassOf<ATProjectile> SecondaryProjectileClass;
+	TSubclassOf<ATProjectileBase> SecondaryProjectileClass;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
-	TSubclassOf<ATProjectile> TertiaryProjectileClass;
+	TSubclassOf<ATProjectileBase> TertiaryProjectileClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UTAttributeComponent* AttributeComp;

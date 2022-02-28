@@ -3,25 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TProjectile.h"
+#include "TProjectileBase.h"
 #include "TDashProjectile.generated.h"
 
 UCLASS()
-class ACTIONROGUELIKE_API ATDashProjectile : public ATProjectile
+class ACTIONROGUELIKE_API ATDashProjectile : public ATProjectileBase
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
 	ATDashProjectile();
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UParticleSystemComponent* ExplosionEffectComp;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	virtual void NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
+	virtual void Explode_Implementation() override;
 
 	void QueueTeleport();
 	void TeleportInstigator();

@@ -3,10 +3,13 @@
 
 #include "TDashProjectile.h"
 
+#include <queue>
+
 #include "DrawDebugHelpers.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
@@ -14,12 +17,6 @@ ATDashProjectile::ATDashProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
-	ExplosionEffectComp = CreateDefaultSubobject<UParticleSystemComponent>("ExplosionEffectComp");
-	ExplosionEffectComp->SetupAttachment(RootComponent);
-	ExplosionEffectComp->SetAutoActivate(false);
-
-	MovementComp->InitialSpeed = 3000.f;
 	
 	DelayBetweenExplosionAndTeleport = 0.2f;
 	DelayBetweenSpawnAndExplosion = 0.2f;
@@ -36,23 +33,19 @@ void ATDashProjectile::BeginPlay()
 		TimerHandle, this, &ATDashProjectile::QueueTeleport, DelayBetweenSpawnAndExplosion, false);
 }
 
-void ATDashProjectile::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp,
-	bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+// Triggered by parent class On Hit
+void ATDashProjectile::Explode_Implementation()
 {
-	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
-
-	if (Other != GetInstigator())
-	{
-		GetWorldTimerManager().ClearTimer(TimerHandle);
-		QueueTeleport();
-	}
+	GetWorldTimerManager().ClearTimer(TimerHandle);
+	QueueTeleport();
 }
 
 void ATDashProjectile::QueueTeleport()
 {
-	ExplosionEffectComp->Activate();
+	UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
+	EffectComp->DeactivateSystem();
 	MovementComp->StopMovementImmediately();
-	SphereComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	SetActorEnableCollision(false);
 	
 	GetWorldTimerManager().SetTimer(
 		TimerHandle, this, &ATDashProjectile::TeleportInstigator, DelayBetweenExplosionAndTeleport, false);
@@ -60,10 +53,14 @@ void ATDashProjectile::QueueTeleport()
 
 void ATDashProjectile::TeleportInstigator()
 {
+	AActor* ActorToTeleport = GetInstigator();
 	const FVector TeleportLocation = SphereComp->GetComponentLocation();
-	const FRotator TeleportRotation = GetInstigator()->GetActorRotation();
-	
-	GetInstigator()->TeleportTo(TeleportLocation, TeleportRotation, false, false);
+	const FRotator TeleportRotation = ActorToTeleport->GetActorRotation();
+
+	if (ensure(ActorToTeleport))
+	{
+		GetInstigator()->TeleportTo(TeleportLocation, TeleportRotation, false, false);
+	}
 	
 	Destroy();
 }

@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TProjectile.h"
+#include "TProjectileBase.h"
 #include "TMagicProjectile.generated.h"
 
 class UProjectileMovementComponent;
 class USphereComponent;
 UCLASS()
-class ACTIONROGUELIKE_API ATMagicProjectile : public ATProjectile
+class ACTIONROGUELIKE_API ATMagicProjectile : public ATProjectileBase
 {
 	GENERATED_BODY()
 	

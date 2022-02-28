@@ -32,13 +32,8 @@ ATCharacter::ATCharacter()
 	
 	AttributeComp = CreateDefaultSubobject<UTAttributeComponent>("AttributeComp");
 
-	// Tick after the camera position has been fully updated. This is necessary for camera-based traces to be true
-	// to what the player is seeing.
-	// https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/UnrealArchitecture/Actors/Ticking/#tickgrouporder
-	SetTickGroup(ETickingGroup::TG_PostUpdateWork);
-
 	MaxAttackTraceDistance = 3000.f;
-
+	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	
 	// Don't apply up/down rotation to the character when the camera rotates
@@ -123,16 +118,14 @@ void ATCharacter::TertiaryAttack()
 	Attack_StartTimer(TertiaryProjectileClass);
 }
 
-void ATCharacter::Attack_StartTimer(const TSubclassOf<ATProjectile>& ProjectileClass)
+void ATCharacter::Attack_StartTimer(const TSubclassOf<ATProjectileBase>& ProjectileClass)
 {
 	FTimerDelegate TimerDel;
-	TimerDel.BindLambda([&]() {
-		Attack_TimeElapsed(ProjectileClass);
-	});
+	TimerDel.BindLambda([&]() { Attack_TimeElapsed(ProjectileClass); });
 	GetWorldTimerManager().SetTimer(TimerHandle_Attack, TimerDel, 0.2f, false);
 }
 
-void ATCharacter::Attack_TimeElapsed(const TSubclassOf<ATProjectile>& ProjectileClass)
+void ATCharacter::Attack_TimeElapsed(const TSubclassOf<ATProjectileBase>& ProjectileClass)
 {
 	if (ensure(ProjectileClass))
 	{
@@ -145,11 +138,11 @@ void ATCharacter::Attack_TimeElapsed(const TSubclassOf<ATProjectile>& Projectile
 		const FTransform SpawnTM = FTransform(LookAtRotation, HandLocation);
 
 		FActorSpawnParameters SpawnParams;
-		// ignore spawning the projectile
+		// ignore collision checks when spawning
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		SpawnParams.Instigator = this;
 
-		GetWorld()->SpawnActor<ATProjectile>(ProjectileClass, SpawnTM, SpawnParams);
+		GetWorld()->SpawnActor<ATProjectileBase>(ProjectileClass, SpawnTM, SpawnParams);
 	}
 }
 
@@ -157,12 +150,13 @@ void ATCharacter::Attack_TimeElapsed(const TSubclassOf<ATProjectile>& Projectile
 bool ATCharacter::ComputeAttackTarget(FVector& TargetLocation)
 {
 	const FVector CameraLocation = CameraComp->GetComponentLocation();
-	const FVector CameraForward = CameraComp->GetForwardVector();
-	const FVector TraceEnd = CameraLocation + (CameraForward * MaxAttackTraceDistance);
+	const FVector ControlRotation = GetControlRotation().Vector();
+	const FVector TraceEnd = CameraLocation + (ControlRotation * MaxAttackTraceDistance);
 	
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldDynamic);
 	ObjectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldStatic);
+	ObjectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Pawn);
 	
 	FCollisionQueryParams CollisionQueryParams;
 	CollisionQueryParams.AddIgnoredActor(this);
@@ -172,24 +166,23 @@ bool ATCharacter::ComputeAttackTarget(FVector& TargetLocation)
 		Hit, CameraLocation, TraceEnd, ObjectQueryParams, CollisionQueryParams);
 
 	TargetLocation = bBlockingHit ? Hit.Location : TraceEnd;
-
 	return bBlockingHit;
 }
 
 void ATCharacter::DrawDebugArrows()
 {
 	const float DrawScale = 100.f;
-	const float Thickness = 5.f;
+	const float Thickness = 3.f;
 	
 	// Offset to the right of the pawn
-	FVector LineStart = GetActorLocation() + (GetActorRightVector() * 100.f);
+	FVector LineStart = GetActorLocation() + FVector(100.f, 0.f, -30);
 
 	// Draw Actor's Direction
-	FVector ActorDirection_LineEnd = LineStart + (GetActorForwardVector() * 100.f);
+	FVector ActorDirection_LineEnd = LineStart + (GetActorForwardVector() * 150.f);
 	DrawDebugDirectionalArrow(GetWorld(), LineStart, ActorDirection_LineEnd, DrawScale, FColor::Yellow, false, 0.f, 0, Thickness);
 
 	// Draw 'Controller' Rotation
-	FVector ControllerDirection_LineEnd = LineStart + (GetControlRotation().Vector() * 100.f);
+	FVector ControllerDirection_LineEnd = LineStart + (GetControlRotation().Vector() * 150.f);
 	DrawDebugDirectionalArrow(GetWorld(), LineStart, ControllerDirection_LineEnd, DrawScale, FColor::Green, false, 0.f, 0, Thickness);
 }
 
