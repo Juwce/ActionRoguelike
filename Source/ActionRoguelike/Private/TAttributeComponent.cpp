@@ -11,12 +11,14 @@ UTAttributeComponent::UTAttributeComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
-	Health = 100.f;
+	HealthMax = 100.f;
+	Health = HealthMax;
 }
 
 bool UTAttributeComponent::ApplyHealthChange(float Delta)
 {
 	Health += Delta;
+	Health = FMath::Clamp(Health, 0.f, HealthMax);
 
 	OnHealthChanged.Broadcast(nullptr, this, Health, Delta);
 	
