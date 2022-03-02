@@ -8,8 +8,11 @@
 #include "TDashProjectile.h"
 #include "TInteractionComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
 ATCharacter::ATCharacter()
@@ -29,7 +32,7 @@ ATCharacter::ATCharacter()
 	CameraComp->SetupAttachment(SpringArmComp);
 	
 	InteractionComp = CreateDefaultSubobject<UTInteractionComponent>("InteractionComp");
-	
+
 	AttributeComp = CreateDefaultSubobject<UTAttributeComponent>("AttributeComp");
 
 	MaxAttackTraceDistance = 3000.f;
@@ -109,24 +112,23 @@ void ATCharacter::PrimaryInteract()
 
 void ATCharacter::PrimaryAttack()
 {
-	PlayAnimMontage(AttackAnim);
 	Attack_StartTimer(PrimaryProjectileClass);
 }
 
 void ATCharacter::SecondaryAttack()
 {
-	PlayAnimMontage(AttackAnim);
 	Attack_StartTimer(SecondaryProjectileClass);
 }
 
 void ATCharacter::TertiaryAttack()
 {
-	PlayAnimMontage(AttackAnim);
 	Attack_StartTimer(TertiaryProjectileClass);
 }
 
 void ATCharacter::Attack_StartTimer(const TSubclassOf<ATProjectileBase>& ProjectileClass)
 {
+	PlayAnimMontage(AttackAnim);
+	
 	FTimerDelegate TimerDel;
 	TimerDel.BindLambda([&]() { Attack_TimeElapsed(ProjectileClass); });
 	GetWorldTimerManager().SetTimer(TimerHandle_Attack, TimerDel, 0.2f, false);
@@ -150,6 +152,7 @@ void ATCharacter::Attack_TimeElapsed(const TSubclassOf<ATProjectileBase>& Projec
 		SpawnParams.Instigator = this;
 
 		GetWorld()->SpawnActor<ATProjectileBase>(ProjectileClass, SpawnTM, SpawnParams);
+		UGameplayStatics::SpawnEmitterAttached(SpellCastVFX, GetMesh(), "Muzzle_01");
 	}
 }
 

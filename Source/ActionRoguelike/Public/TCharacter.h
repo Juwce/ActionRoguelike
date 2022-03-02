@@ -74,6 +74,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UTInteractionComponent* InteractionComp;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UParticleSystem* SpellCastVFX;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | Attack")
 	UAnimMontage* AttackAnim;
@@ -89,6 +92,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UTAttributeComponent* AttributeComp;
+	
 
 	/*
 	 * Misc Properties

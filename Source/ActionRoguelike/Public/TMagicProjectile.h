@@ -23,9 +23,26 @@ protected:
 
 	virtual void PostInitializeComponents() override;
 
+	virtual void Explode_Implementation() override;
+
 	UFUNCTION()
 	void OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CameraShake")
+	TSubclassOf<UCameraShakeBase> CameraShake;
+
+	// Cameras inside this radius will be ignored
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CameraShake")
+	float CameraShakeInnerRadius;
+
+	// Cameras outside inner radius and inside this radius will be affected
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CameraShake")
+	float CameraShakeOuterRadius;
+
+	// Affects falloff of effect as it nears outer radius
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CameraShake")
+	float CameraShakeFalloff;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float Damage;
 
