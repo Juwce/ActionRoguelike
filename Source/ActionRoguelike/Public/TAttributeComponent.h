@@ -17,6 +17,9 @@ public:
 	// Sets default values for this component's properties
 	UTAttributeComponent();
 
+	float GetHealth() { return Health; }
+	float GetHealthMax() { return HealthMax; }
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
