@@ -16,20 +16,17 @@ public:
 
 	void PrimaryInteract();
 
-public:	
 	// Sets default values for this component's properties
 	UTInteractionComponent();
-
-	UPROPERTY(EditAnywhere)
-	float MaxInteractDistance;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
+	UFUNCTION(BlueprintCallable)
+	bool ComputeInteractCandidates(TArray<FHitResult>& Hits);
+	
+	UPROPERTY(EditAnywhere)
+	float MaxInteractDistance;
 		
 };

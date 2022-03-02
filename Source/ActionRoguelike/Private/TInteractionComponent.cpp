@@ -5,6 +5,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "TGameplayInterface.h"
+#include "Camera/CameraComponent.h"
 
 
 // Sets default values for this component's properties
@@ -29,46 +30,57 @@ void UTInteractionComponent::BeginPlay()
 	
 }
 
-
-// Called every frame
-void UTInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-
-
-void UTInteractionComponent::PrimaryInteract()
+bool UTInteractionComponent::ComputeInteractCandidates(TArray<FHitResult>& Hits)
 {
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic); // only interact with WorldDynamic
 
+	// Trace Start/End
 	AActor* MyOwner = GetOwner();
-
-	FVector EyesLocation;
-	FRotator EyesRotation;
-	MyOwner->GetActorEyesViewPoint(EyesLocation, EyesRotation);
-
-	const FVector TraceEnd = EyesLocation + (EyesRotation.Vector() * MaxInteractDistance);
-
-	// Takes a sphere and "moves" it from start to end, stopping at its first blocking hit
-	TArray<FHitResult> Hits;
+	FVector TraceStart;
+	FRotator TraceRotation;
+	UCameraComponent* OwnersCamera = Cast<UCameraComponent>(MyOwner->GetComponentByClass(UCameraComponent::StaticClass()));
+	if (OwnersCamera)
+	{
+		TraceStart = OwnersCamera->GetComponentLocation();
+		TraceRotation = OwnersCamera->GetComponentRotation();
+	}
+	else
+	{
+		MyOwner->GetActorEyesViewPoint(TraceStart, TraceRotation);
+	}
+	const FVector TraceEnd = TraceStart + (TraceRotation.Vector() * MaxInteractDistance);
 	
+	const float Radius = 30.f;
 	FCollisionShape Shape;
-	float Radius = 30.f;
 	Shape.SetSphere(Radius);
-	
-	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, EyesLocation, TraceEnd, FQuat::Identity, ObjectQueryParams, Shape);
 
+	const bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, TraceStart, TraceEnd, FQuat::Identity, ObjectQueryParams, Shape);
+
+	// Debug
+	const FColor DebugLineColor = bBlockingHit ? FColor::Green : FColor::Red;
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, DebugLineColor, false, 2.f, 0, 2.f);
+	for (FHitResult Hit : Hits)
+	{
+		DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 32, FColor::Green, false, 2.f, 0, 0.5f);
+	}
+
+	return bBlockingHit;
+}
+
+void UTInteractionComponent::PrimaryInteract()
+{
+	TArray<FHitResult> Hits;
+	ComputeInteractCandidates(Hits);
+	
 	for (FHitResult Hit : Hits)
 	{
 		AActor* HitActor = Hit.GetActor();
-		DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 32, FColor::Green, false, 2.f, 0, 0.5f);
 		
 		// Check the "U" TGameplayInterface when checking for Implementation
 		if (HitActor && HitActor->Implements<UTGameplayInterface>())
 		{
+			AActor* MyOwner = GetOwner();
 			APawn* MyPawn = Cast<APawn>(MyOwner);
 			// Call interface functions with the "I" TGameplayInterface
 			// BlueprintNative UFUNCTIONs are Static functions prefixed
@@ -78,6 +90,4 @@ void UTInteractionComponent::PrimaryInteract()
 		}
 	}
 
-	const FColor DebugLineColor = bBlockingHit ? FColor::Green : FColor::Red;
-	DrawDebugLine(GetWorld(), EyesLocation, TraceEnd, DebugLineColor, false, 2.f, 0, 2.f);
 }
