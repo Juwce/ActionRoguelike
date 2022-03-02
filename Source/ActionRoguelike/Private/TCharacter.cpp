@@ -184,6 +184,14 @@ void ATCharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent*
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
 	}
+
+	if (Delta < 0.f)
+	{
+		GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
+		GetMesh()->SetScalarParameterValueOnMaterials("HitFlashSpeed", HitFlashSpeed);
+		GetMesh()->SetVectorParameterValueOnMaterials("HitFlashColor",
+			FVector(HitFlashColor.R, HitFlashColor.G, HitFlashColor.B));
+	}
 }
 
 void ATCharacter::DrawDebugArrows()

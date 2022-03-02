@@ -75,16 +75,16 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UTInteractionComponent* InteractionComp;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | Attack")
 	UAnimMontage* AttackAnim;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | Attack")
 	TSubclassOf<ATProjectileBase> PrimaryProjectileClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | Attack")
 	TSubclassOf<ATProjectileBase> SecondaryProjectileClass;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | Attack")
 	TSubclassOf<ATProjectileBase> TertiaryProjectileClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
@@ -93,6 +93,13 @@ protected:
 	/*
 	 * Misc Properties
 	 */
+	// How quickly the flash upon being hit should happen
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | HitFlash")
+	float HitFlashSpeed;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | HitFlash")
+	FColor HitFlashColor;
+	
 	// Max distance away from the camera to trace for an attack target
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MaxAttackTraceDistance;

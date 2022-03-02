@@ -2,6 +2,8 @@
 
 
 #include "TProjectileBase.h"
+
+#include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -27,6 +29,9 @@ ATProjectileBase::ATProjectileBase()
 	MovementComp->InitialSpeed = 8000.f;
 	MovementComp->ProjectileGravityScale = 0.f;
 
+	AudioComp = CreateDefaultSubobject<UAudioComponent>("AudioComp");
+	AudioComp->SetupAttachment(SphereComp);
+	AudioComp->SetAutoActivate(true);
 }
 
 void ATProjectileBase::BeginPlay()
@@ -37,13 +42,13 @@ void ATProjectileBase::BeginPlay()
 void ATProjectileBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+
+	SphereComp->OnComponentHit.AddDynamic(this, &ATProjectileBase::OnActorHit);
 }
 
-void ATProjectileBase::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp,
-                                 bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+void ATProjectileBase::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+                                  UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
-	
 	Explode();
 }
 
@@ -52,6 +57,11 @@ void ATProjectileBase::Explode_Implementation()
 	if (ensure(!IsPendingKill()))
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
+
+		if (ImpactSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, GetActorLocation());
+		}
 		Destroy();
 	}
 }
