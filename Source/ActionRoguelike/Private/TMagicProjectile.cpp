@@ -51,7 +51,7 @@ void ATMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 		if (AttributeComp)
 		{
 			AttributeComp->ApplyHealthChange(Damage);
-			Destroy();
+			Explode();
 		}
 	}
 }

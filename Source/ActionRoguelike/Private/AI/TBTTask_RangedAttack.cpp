@@ -14,20 +14,20 @@ EBTNodeResult::Type UTBTTask_RangedAttack::ExecuteTask(UBehaviorTreeComponent& O
 
 EBTNodeResult::Type UTBTTask_RangedAttack::PerformRangedAttack(UBehaviorTreeComponent& OwnerComp)
 {
-	AAIController* MyController = OwnerComp.GetAIOwner();
+	const AAIController* MyController = OwnerComp.GetAIOwner();
 	if (!ensure(MyController))
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	ACharacter* MyCharacter = Cast<ACharacter>(MyController->GetPawn());
+	const ACharacter* MyCharacter = Cast<ACharacter>(MyController->GetPawn());
 	if (!MyCharacter)
 	{
 		return EBTNodeResult::Failed;
 	}
 
 	const FVector MuzzleLocation = MyCharacter->GetMesh()->GetSocketLocation("Muzzle_01");
-	AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor"));
+	const AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor"));
 	if (!TargetActor)
 	{
 		return EBTNodeResult::Failed;
@@ -38,7 +38,7 @@ EBTNodeResult::Type UTBTTask_RangedAttack::PerformRangedAttack(UBehaviorTreeComp
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	AActor* NewProjectile = GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
+	const AActor* NewProjectile = GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
 
 	return NewProjectile ? EBTNodeResult::Succeeded : EBTNodeResult::Failed;
 }
