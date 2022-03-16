@@ -12,13 +12,13 @@ void ATAIController::BeginPlay()
 
 	RunBehaviorTree(BehaviorTree);
 
-	// TODO: Not a good way to get the player (prof mentioned pawn sensing), but fine for prototyping
-	APawn* MyPawn = UGameplayStatics::GetPlayerPawn(this, 0);
-	if (MyPawn)
-	{
-		// TODO: Want to expose "MoveToLocation" as a variable... bad to have it hard coded
-		GetBlackboardComponent()->SetValueAsVector("MoveToLocation", MyPawn->GetActorLocation());
-		GetBlackboardComponent()->SetValueAsObject("TargetActor", MyPawn);
-	}
+	// // TODO: Not a good way to get the player (prof mentioned pawn sensing), but fine for prototyping
+	// APawn* MyPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+	// if (MyPawn)
+	// {
+	// 	// TODO: Want to expose "MoveToLocation" as a variable... bad to have it hard coded
+	// 	GetBlackboardComponent()->SetValueAsVector("MoveToLocation", MyPawn->GetActorLocation());
+	// 	GetBlackboardComponent()->SetValueAsObject("TargetActor", MyPawn);
+	// }
 	
 }
