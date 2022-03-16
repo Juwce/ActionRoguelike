@@ -10,8 +10,6 @@ void ATAIController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	RunBehaviorTree(BehaviorTree);
-
 	// // TODO: Not a good way to get the player (prof mentioned pawn sensing), but fine for prototyping
 	// APawn* MyPawn = UGameplayStatics::GetPlayerPawn(this, 0);
 	// if (MyPawn)
@@ -20,5 +18,10 @@ void ATAIController::BeginPlay()
 	// 	GetBlackboardComponent()->SetValueAsVector("MoveToLocation", MyPawn->GetActorLocation());
 	// 	GetBlackboardComponent()->SetValueAsObject("TargetActor", MyPawn);
 	// }
+
+	if (ensureMsgf(BehaviorTree, TEXT("BehaviorTree is nullptr! Please assign BehaviorTree in your AI controller.")))
+	{
+		RunBehaviorTree(BehaviorTree);
+	}
 	
 }
