@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "TProjectileBase.h"
-#include "TMagicProjectile.generated.h"
+#include "TProjectile_Magic.generated.h"
 
 class UProjectileMovementComponent;
 class USphereComponent;
 UCLASS()
-class ACTIONROGUELIKE_API ATMagicProjectile : public ATProjectileBase
+class ACTIONROGUELIKE_API ATProjectile_Magic : public ATProjectileBase
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ATMagicProjectile();
+	ATProjectile_Magic();
 
 protected:
 	// Called when the game starts or when spawned

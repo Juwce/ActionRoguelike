@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "TMagicProjectile.h"
+#include "TProjectile_Magic.h"
 
 #include "TAttributeComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
-ATMagicProjectile::ATMagicProjectile()
+ATProjectile_Magic::ATProjectile_Magic()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -16,21 +16,21 @@ ATMagicProjectile::ATMagicProjectile()
 }
 
 // Called when the game starts or when spawned
-void ATMagicProjectile::BeginPlay()
+void ATProjectile_Magic::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
 }
 
-void ATMagicProjectile::PostInitializeComponents()
+void ATProjectile_Magic::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	
-	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ATMagicProjectile::OnActorOverlap);
+	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ATProjectile_Magic::OnActorOverlap);
 }
 
-void ATMagicProjectile::Explode_Implementation()
+void ATProjectile_Magic::Explode_Implementation()
 {
 	Super::Explode_Implementation();
 
@@ -40,7 +40,7 @@ void ATMagicProjectile::Explode_Implementation()
 	}
 }
 
-void ATMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+void ATProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != GetInstigator())
@@ -57,7 +57,7 @@ void ATMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 }
 
 // Called every frame
-void ATMagicProjectile::Tick(float DeltaTime)
+void ATProjectile_Magic::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 

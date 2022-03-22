@@ -5,7 +5,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "TAttributeComponent.h"
-#include "TDashProjectile.h"
+#include "TProjectile_Dash.h"
 #include "TInteractionComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/SkeletalMeshSocket.h"

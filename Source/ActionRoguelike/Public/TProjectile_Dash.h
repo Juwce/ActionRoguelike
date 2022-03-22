@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "TProjectileBase.h"
-#include "TDashProjectile.generated.h"
+#include "TProjectile_Dash.generated.h"
 
 UCLASS()
-class ACTIONROGUELIKE_API ATDashProjectile : public ATProjectileBase
+class ACTIONROGUELIKE_API ATProjectile_Dash : public ATProjectileBase
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ATDashProjectile();
+	ATProjectile_Dash();
 
 protected:
 	// Called when the game starts or when spawned
