@@ -95,15 +95,31 @@ protected:
 	
 
 	/*
-	 * Misc Properties
+	 * Hit Flash Effect
 	 */
 	// How quickly the flash upon being hit should happen
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | HitFlash")
 	float HitFlashSpeed;
-	
+
+	// Emissive color of the hit flash
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | HitFlash")
 	FColor HitFlashColor;
+
+	// Material parameter name used to set the time to hit value
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects")
+	FName TimeToHitMaterialParamName;
 	
+	// Material parameter name used to set the hit flash speed value
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects")
+	FName HitFlashSpeedMaterialParamName;
+
+	// Material parameter name used to set the hit flash color value
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects")
+	FName HitFlashColorMaterialParamName;
+
+	/*
+	 * Misc Properties
+	 */
 	// Max distance away from the camera to trace for an attack target
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MaxAttackTraceDistance;
@@ -112,8 +128,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bDrawDebugArrows;
 
+	// Name of the hand socket on the character's skeletal mesh that various effects are spawned at the location of
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects")
+	FName HandSocketName;
+	
+	
+
 private:
-	void DrawDebugArrows();
+	void DrawDebugArrows() const;
 
 	FTimerHandle TimerHandle_Attack;
 

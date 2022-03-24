@@ -5,7 +5,7 @@
 
 #include "TAttributeComponent.h"
 #include "TCharacter.h"
-#include "TMagicProjectile.h"
+#include "TProjectile_Magic.h"
 #include "PhysicsEngine/RadialForceComponent.h"
 
 // Sets default values

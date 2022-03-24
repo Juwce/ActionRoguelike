@@ -5,7 +5,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "TAttributeComponent.h"
-#include "TDashProjectile.h"
+#include "TProjectile_Dash.h"
 #include "TInteractionComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
@@ -41,6 +41,11 @@ ATCharacter::ATCharacter()
 	
 	// Don't apply up/down rotation to the character when the camera rotates
 	bUseControllerRotationYaw = false;
+
+	HandSocketName = "Muzzle_01";
+	TimeToHitMaterialParamName = "TimeToHit";
+	HitFlashSpeedMaterialParamName = "HitFlashSpeed";
+	HitFlashColorMaterialParamName = "HitFlashColor";
 }
 
 // Called every frame
@@ -138,7 +143,7 @@ void ATCharacter::Attack_TimeElapsed(const TSubclassOf<ATProjectileBase>& Projec
 {
 	if (ensure(ProjectileClass))
 	{
-		const FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+		const FVector HandLocation = GetMesh()->GetSocketLocation(HandSocketName);
 
 		FVector Target;
 		ComputeAttackTarget(Target);
@@ -152,7 +157,7 @@ void ATCharacter::Attack_TimeElapsed(const TSubclassOf<ATProjectileBase>& Projec
 		SpawnParams.Instigator = this;
 
 		GetWorld()->SpawnActor<ATProjectileBase>(ProjectileClass, SpawnTM, SpawnParams);
-		UGameplayStatics::SpawnEmitterAttached(SpellCastVFX, GetMesh(), "Muzzle_01");
+		UGameplayStatics::SpawnEmitterAttached(SpellCastVFX, GetMesh(), HandSocketName);
 	}
 }
 
@@ -190,27 +195,27 @@ void ATCharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent*
 
 	if (Delta < 0.f)
 	{
-		GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
-		GetMesh()->SetScalarParameterValueOnMaterials("HitFlashSpeed", HitFlashSpeed);
-		GetMesh()->SetVectorParameterValueOnMaterials("HitFlashColor",
+		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitMaterialParamName, GetWorld()->TimeSeconds);
+		GetMesh()->SetScalarParameterValueOnMaterials(HitFlashSpeedMaterialParamName, HitFlashSpeed);
+		GetMesh()->SetVectorParameterValueOnMaterials(HitFlashColorMaterialParamName,
 			FVector(HitFlashColor.R, HitFlashColor.G, HitFlashColor.B));
 	}
 }
 
-void ATCharacter::DrawDebugArrows()
+void ATCharacter::DrawDebugArrows() const
 {
 	const float DrawScale = 100.f;
 	const float Thickness = 3.f;
 	
 	// Offset to the right of the pawn
-	FVector LineStart = GetActorLocation() + FVector(100.f, 0.f, -30);
+	const FVector LineStart = GetActorLocation() + FVector(100.f, 0.f, -30);
 
 	// Draw Actor's Direction
-	FVector ActorDirection_LineEnd = LineStart + (GetActorForwardVector() * 150.f);
+	const FVector ActorDirection_LineEnd = LineStart + (GetActorForwardVector() * 150.f);
 	DrawDebugDirectionalArrow(GetWorld(), LineStart, ActorDirection_LineEnd, DrawScale, FColor::Yellow, false, 0.f, 0, Thickness);
 
 	// Draw 'Controller' Rotation
-	FVector ControllerDirection_LineEnd = LineStart + (GetControlRotation().Vector() * 150.f);
+	const FVector ControllerDirection_LineEnd = LineStart + (GetControlRotation().Vector() * 150.f);
 	DrawDebugDirectionalArrow(GetWorld(), LineStart, ControllerDirection_LineEnd, DrawScale, FColor::Green, false, 0.f, 0, Thickness);
 }
 

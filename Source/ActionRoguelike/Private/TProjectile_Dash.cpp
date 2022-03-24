@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "TDashProjectile.h"
+#include "TProjectile_Dash.h"
 
 #include <queue>
 
@@ -13,7 +13,7 @@
 #include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
-ATDashProjectile::ATDashProjectile()
+ATProjectile_Dash::ATProjectile_Dash()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -23,24 +23,24 @@ ATDashProjectile::ATDashProjectile()
 }
 
 // Called when the game starts or when spawned
-void ATDashProjectile::BeginPlay()
+void ATProjectile_Dash::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
 
 	GetWorldTimerManager().SetTimer(
-		TimerHandle, this, &ATDashProjectile::QueueTeleport, DelayBetweenSpawnAndExplosion, false);
+		TimerHandle, this, &ATProjectile_Dash::QueueTeleport, DelayBetweenSpawnAndExplosion, false);
 }
 
 // Triggered by parent class On Hit
-void ATDashProjectile::Explode_Implementation()
+void ATProjectile_Dash::Explode_Implementation()
 {
 	GetWorldTimerManager().ClearTimer(TimerHandle);
 	QueueTeleport();
 }
 
-void ATDashProjectile::QueueTeleport()
+void ATProjectile_Dash::QueueTeleport()
 {
 	UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
 	EffectComp->DeactivateSystem();
@@ -48,10 +48,10 @@ void ATDashProjectile::QueueTeleport()
 	SetActorEnableCollision(false);
 	
 	GetWorldTimerManager().SetTimer(
-		TimerHandle, this, &ATDashProjectile::TeleportInstigator, DelayBetweenExplosionAndTeleport, false);
+		TimerHandle, this, &ATProjectile_Dash::TeleportInstigator, DelayBetweenExplosionAndTeleport, false);
 }
 
-void ATDashProjectile::TeleportInstigator()
+void ATProjectile_Dash::TeleportInstigator()
 {
 	AActor* ActorToTeleport = GetInstigator();
 	const FVector TeleportLocation = SphereComp->GetComponentLocation();
@@ -66,7 +66,7 @@ void ATDashProjectile::TeleportInstigator()
 }
 
 // Called every frame
-void ATDashProjectile::Tick(float DeltaTime)
+void ATProjectile_Dash::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
