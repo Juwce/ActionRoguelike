@@ -27,6 +27,17 @@ void ATGameModeBase::StartPlay()
 
 void ATGameModeBase::SpawnBotTimerElapsed()
 {
+	if (DifficultyCurve)
+	{
+		MaxBotCount = DifficultyCurve->GetFloatValue(GetWorld()->TimeSeconds);
+	}
+	
+	const int32 NumAliveBots = GetNumAliveBots();
+	if (NumAliveBots >= MaxBotCount)
+	{
+		return;
+	}
+	
 	UEnvQueryInstanceBlueprintWrapper* QueryInstance =
 		UEnvQueryManager::RunEQSQuery(
 			this, SpawnBotQuery, this, EEnvQueryRunMode::RandomBest5Pct, nullptr
@@ -46,7 +57,7 @@ int32 ATGameModeBase::GetNumAliveBots() const
 		ATAICharacter* Bot = *Iter;
 		UTAttributeComponent* AttributeComp = Cast<UTAttributeComponent>(
 			Bot->GetComponentByClass(UTAttributeComponent::StaticClass()));
-		if (AttributeComp && AttributeComp->IsAlive())
+		if (ensure(AttributeComp) && AttributeComp->IsAlive())
 		{
 			NumAliveBots++;
 		}
@@ -67,17 +78,6 @@ void ATGameModeBase::OnSpawnQueryComplete(UEnvQueryInstanceBlueprintWrapper* Que
 	if (!Locations.IsValidIndex(0))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Spawn bot EQS Query could not find a suitable spawn location."));
-		return;
-	}
-
-	if (DifficultyCurve)
-	{
-		MaxBotCount = DifficultyCurve->GetFloatValue(GetWorld()->TimeSeconds);
-	}
-	
-	const int32 NumAliveBots = GetNumAliveBots();
-	if (NumAliveBots >= MaxBotCount)
-	{
 		return;
 	}
 	
