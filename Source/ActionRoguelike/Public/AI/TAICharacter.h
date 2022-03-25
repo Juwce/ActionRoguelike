@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "TAICharacter.generated.h"
 
+class UTAttributeComponent;
 class UPawnSensingComponent;
 UCLASS()
 class ACTIONROGUELIKE_API ATAICharacter : public ACharacter
@@ -25,4 +26,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UPawnSensingComponent* PawnSensingComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UTAttributeComponent* AttributeComp;
 };

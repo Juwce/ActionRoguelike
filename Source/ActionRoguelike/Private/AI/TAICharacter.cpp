@@ -5,6 +5,7 @@
 
 #include "AIController.h"
 #include "DrawDebugHelpers.h"
+#include "TAttributeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Perception/PawnSensingComponent.h"
 
@@ -15,7 +16,10 @@ ATAICharacter::ATAICharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComponent");
+	AttributeComp = CreateDefaultSubobject<UTAttributeComponent>("AttributeComponent");
 
+	// Assigns AI controller to character when spawned (4.27 default is "Placed" only)
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 void ATAICharacter::PostInitializeComponents()
