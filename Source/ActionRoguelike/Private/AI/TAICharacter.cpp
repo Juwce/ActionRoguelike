@@ -16,7 +16,9 @@ ATAICharacter::ATAICharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComponent");
+	
 	AttributeComp = CreateDefaultSubobject<UTAttributeComponent>("AttributeComponent");
+	AttributeComp->OnHealthChanged.AddDynamic(this, &ATAICharacter::OnHealthChanged);
 
 	// Assigns AI controller to character when spawned (4.27 default is "Placed" only)
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
@@ -42,3 +44,21 @@ void ATAICharacter::OnPawnSeen(APawn* Pawn)
 		DrawDebugString(GetWorld(), Pawn->GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.0f, true);
 	}
 }
+
+void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth,
+	float Delta)
+{
+	if (Delta < 0.f)
+	{
+		if (NewHealth <= 0.f)
+		{
+			// stop BT
+
+			// ragdoll
+
+			// set lifespan (time to ragdoll and see corpse before destroying it)
+			SetLifeSpan(10.f);
+		}
+	}
+}
+

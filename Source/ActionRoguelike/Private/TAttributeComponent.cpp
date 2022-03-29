@@ -17,10 +17,12 @@ UTAttributeComponent::UTAttributeComponent()
 
 bool UTAttributeComponent::ApplyHealthChange(float Delta)
 {
+	const float OldHealth = Health;
 	Health += Delta;
 	Health = FMath::Clamp(Health, 0.f, HealthMax);
 
-	OnHealthChanged.Broadcast(nullptr, this, Health, Delta);
+	const float AppliedDelta = Health - OldHealth;
+	OnHealthChanged.Broadcast(nullptr, this, Health, AppliedDelta);
 	
 	return true;
 }
