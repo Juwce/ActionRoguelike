@@ -45,7 +45,7 @@ protected:
 	void PrimaryInteract();
 	
 	/*
-	 * Combat
+	 * Attacks
 	 */
 	void PrimaryAttack();
 	void SecondaryAttack();
@@ -56,9 +56,13 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	bool ComputeAttackTarget(FVector& TargetLocation);
+	
+	// Max distance away from the camera to trace for an attack target
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MaxAttackTraceDistance;
 
 	/*
-	 * Attributes, Life and Death
+	 * Attributes
 	 */
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth, float Delta);
@@ -93,10 +97,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UTAttributeComponent* AttributeComp;
 	
-
 	/*
 	 * Hit Flash Effect
 	 */
+	void TriggerHitFlashEffect();
+	
 	// How quickly the flash upon being hit should happen
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | HitFlash")
 	float HitFlashSpeed;
@@ -120,10 +125,6 @@ protected:
 	/*
 	 * Misc Properties
 	 */
-	// Max distance away from the camera to trace for an attack target
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float MaxAttackTraceDistance;
-
 	// Whether or not to draw debug arrows for Controller & Actor forward vectors
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bDrawDebugArrows;
@@ -132,8 +133,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects")
 	FName HandSocketName;
 	
-	
-
 private:
 	void DrawDebugArrows() const;
 

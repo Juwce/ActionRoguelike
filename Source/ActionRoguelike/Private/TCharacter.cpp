@@ -184,8 +184,16 @@ bool ATCharacter::ComputeAttackTarget(FVector& TargetLocation)
 	return bBlockingHit;
 }
 
+void ATCharacter::TriggerHitFlashEffect()
+{
+	GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitMaterialParamName, GetWorld()->TimeSeconds);
+	GetMesh()->SetScalarParameterValueOnMaterials(HitFlashSpeedMaterialParamName, HitFlashSpeed);
+	GetMesh()->SetVectorParameterValueOnMaterials(HitFlashColorMaterialParamName,
+	                                              FVector(HitFlashColor.R, HitFlashColor.G, HitFlashColor.B));
+}
+
 void ATCharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth,
-	float Delta)
+                                  float Delta)
 {
 	if (NewHealth <= 0.f && Delta < 0.f)
 	{
@@ -195,10 +203,7 @@ void ATCharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent*
 
 	if (Delta < 0.f)
 	{
-		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitMaterialParamName, GetWorld()->TimeSeconds);
-		GetMesh()->SetScalarParameterValueOnMaterials(HitFlashSpeedMaterialParamName, HitFlashSpeed);
-		GetMesh()->SetVectorParameterValueOnMaterials(HitFlashColorMaterialParamName,
-			FVector(HitFlashColor.R, HitFlashColor.G, HitFlashColor.B));
+		TriggerHitFlashEffect();
 	}
 }
 

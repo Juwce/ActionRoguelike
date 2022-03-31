@@ -28,6 +28,12 @@ protected:
 	// Health Max, Stamina, Strength
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	float HealthMax;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cheats")
+	bool bCheat_TakeNoDamage;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cheats")
+	bool bCheat_TakeAlmostNoDamage;
 	
 public:	
 

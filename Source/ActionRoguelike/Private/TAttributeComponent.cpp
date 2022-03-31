@@ -13,10 +13,22 @@ UTAttributeComponent::UTAttributeComponent()
 	// ...
 	HealthMax = 100.f;
 	Health = HealthMax;
+
+	bCheat_TakeNoDamage = false;
+	bCheat_TakeAlmostNoDamage = false;
 }
 
 bool UTAttributeComponent::ApplyHealthChange(float Delta)
 {
+	if (bCheat_TakeNoDamage)
+	{
+		Delta = FMath::Max(Delta, 0.f);
+	}
+	else if (bCheat_TakeAlmostNoDamage)
+	{
+		Delta = FMath::Max(Delta, -1.f);
+	}
+	
 	const float OldHealth = Health;
 	Health += Delta;
 	Health = FMath::Clamp(Health, 0.f, HealthMax);

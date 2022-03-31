@@ -18,7 +18,6 @@ ATAICharacter::ATAICharacter()
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComponent");
 	
 	AttributeComp = CreateDefaultSubobject<UTAttributeComponent>("AttributeComponent");
-	AttributeComp->OnHealthChanged.AddDynamic(this, &ATAICharacter::OnHealthChanged);
 
 	// Assigns AI controller to character when spawned (4.27 default is "Placed" only)
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
@@ -29,6 +28,8 @@ void ATAICharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &ATAICharacter::OnPawnSeen);
+	
+	AttributeComp->OnHealthChanged.AddDynamic(this, &ATAICharacter::OnHealthChanged);
 }
 
 void ATAICharacter::OnPawnSeen(APawn* Pawn)
@@ -60,5 +61,7 @@ void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponen
 			SetLifeSpan(10.f);
 		}
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("%s took damage! Health: %f"), *GetName(), NewHealth);
 }
 
