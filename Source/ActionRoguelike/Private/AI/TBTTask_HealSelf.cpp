@@ -22,8 +22,8 @@ EBTNodeResult::Type UTBTTask_HealSelf::PerformHealSelf(UBehaviorTreeComponent& O
 		}
 	}
 
-	const float AmountToHeal = OwnerAttributeComp->GetHealthMax() - OwnerAttributeComp->GetHealth();
-	OwnerAttributeComp->ApplyHealthChange(AmountToHeal);
+	const float HealAmount = OwnerAttributeComp->GetHealthMax() - OwnerAttributeComp->GetHealth();
+	OwnerAttributeComp->ApplyHealthChange(HealAmount);
 
 	return EBTNodeResult::Succeeded;
 }

@@ -41,8 +41,6 @@ void ATAICharacter::OnPawnSeen(APawn* Pawn)
 		check(BBComp != nullptr);
 
 		BBComp->SetValueAsObject("TargetActor", Pawn);
-
-		DrawDebugString(GetWorld(), Pawn->GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.0f, true);
 	}
 }
 
@@ -61,7 +59,5 @@ void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponen
 			SetLifeSpan(10.f);
 		}
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("%s took damage! Health: %f"), *GetName(), NewHealth);
 }
 
