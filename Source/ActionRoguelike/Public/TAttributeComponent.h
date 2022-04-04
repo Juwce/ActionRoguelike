@@ -20,6 +20,19 @@ public:
 	float GetHealth() { return Health; }
 	float GetHealthMax() { return HealthMax; }
 
+	UFUNCTION(BlueprintCallable)
+	void ApplyHealthChange(float Delta);
+
+	// Apply a health change over the given duration, split up evenly over the specified number of ticks
+	UFUNCTION(BlueprintCallable)
+	void ApplyHealthChangeOverTime(float Delta, float Duration, int32 Ticks);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsAlive() const;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnHealthChanged OnHealthChanged;
+	
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
@@ -35,15 +48,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cheats")
 	bool bCheat_TakeAlmostNoDamage;
 	
-public:	
 
-	UFUNCTION(BlueprintCallable)
-	bool ApplyHealthChange(float Delta);
+private:
+	void HealthChangeOverTime_Tick(float Delta, float Duration);
 
-	UFUNCTION(BlueprintCallable)
-	bool IsAlive() const;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnHealthChanged OnHealthChanged;
-		
+	FTimerHandle HealthChangeTimerHandle;
+	int32 HealthChangeTicksLeft;
 };

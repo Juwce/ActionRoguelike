@@ -5,13 +5,9 @@
 
 #include "AIController.h"
 #include "TAttributeComponent.h"
+#include "BehaviorTree/Tasks/BTTask_FinishWithResult.h"
 
 EBTNodeResult::Type UTBTTask_HealSelf::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
-{
-	return PerformHealSelf(OwnerComp);
-}
-
-EBTNodeResult::Type UTBTTask_HealSelf::PerformHealSelf(UBehaviorTreeComponent& OwnerComp)
 {
 	if (!OwnerAttributeComp)
 	{
@@ -21,10 +17,29 @@ EBTNodeResult::Type UTBTTask_HealSelf::PerformHealSelf(UBehaviorTreeComponent& O
 			return EBTNodeResult::Failed;
 		}
 	}
+	
+	return PerformHealSelf(OwnerComp);
+}
 
-	const float HealAmount = OwnerAttributeComp->GetHealthMax() - OwnerAttributeComp->GetHealth();
-	OwnerAttributeComp->ApplyHealthChange(HealAmount);
+EBTNodeResult::Type UTBTTask_HealSelf::PerformHealSelf(UBehaviorTreeComponent& OwnerComp)
+{
+	float TotalPointsToHeal = HealValueType == HealingType::HealthPoints;
+	
+	if (HealValueType == HealingType::HealthPoints)
+	{
+		TotalPointsToHeal = HealValue;
+	}
+	else if (HealValueType == HealingType::PercentOfHealthMax)
+	{
+		TotalPointsToHeal = HealValue * OwnerAttributeComp->GetHealthMax();
+	}
+	else
+	{
+		ensureMsgf(false, TEXT("Selected healing type not implemented! Ask a developer to add support."));
+		return EBTNodeResult::Failed;
+	}
 
+	OwnerAttributeComp->ApplyHealthChangeOverTime(TotalPointsToHeal, HealDuration, HealTicks);
 	return EBTNodeResult::Succeeded;
 }
 
