@@ -55,11 +55,3 @@ void ATProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedComponent
 		}
 	}
 }
-
-// Called every frame
-void ATProjectile_Magic::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-

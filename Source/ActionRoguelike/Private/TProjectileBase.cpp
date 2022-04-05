@@ -34,11 +34,6 @@ ATProjectileBase::ATProjectileBase()
 	AudioComp->SetAutoActivate(true);
 }
 
-void ATProjectileBase::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void ATProjectileBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();

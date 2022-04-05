@@ -32,13 +32,6 @@ ATExplosiveBarrel::ATExplosiveBarrel()
 	ExplosionRetriggerDelaySeconds = 1.f;
 }
 
-// Called when the game starts or when spawned
-void ATExplosiveBarrel::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
 void ATExplosiveBarrel::Explode()
 {
 	RadialForceComp->FireImpulse();
@@ -68,12 +61,6 @@ void ATExplosiveBarrel::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UP
 			ExplosionDelayTimerHandle, this, &ATExplosiveBarrel::EnableExplode, ExplosionRetriggerDelaySeconds, false);
 		
 	}
-}
-
-// Called every frame
-void ATExplosiveBarrel::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void ATExplosiveBarrel::EnableExplode()

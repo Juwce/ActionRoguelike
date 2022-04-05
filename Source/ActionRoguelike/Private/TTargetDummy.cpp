@@ -17,26 +17,12 @@ ATTargetDummy::ATTargetDummy()
 	AttributeComp = CreateDefaultSubobject<UTAttributeComponent>("AttributeComp");
 }
 
-// Called when the game starts or when spawned
-void ATTargetDummy::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
 void ATTargetDummy::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	
 	// Trigger when health is changed (damage/healing)
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ATTargetDummy::OnHealthChanged);
-}
-
-// Called every frame
-void ATTargetDummy::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 void ATTargetDummy::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth,

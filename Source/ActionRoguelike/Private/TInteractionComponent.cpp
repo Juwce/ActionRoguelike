@@ -16,18 +16,6 @@ UTInteractionComponent::UTInteractionComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	MaxInteractDistance = 1000.f;
-
-	// ..
-}
-
-
-// Called when the game starts
-void UTInteractionComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// ...
-	
 }
 
 bool UTInteractionComponent::ComputeInteractCandidates(TArray<FHitResult>& Hits)
