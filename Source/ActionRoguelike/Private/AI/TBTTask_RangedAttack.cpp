@@ -20,7 +20,7 @@ EBTNodeResult::Type UTBTTask_RangedAttack::PerformRangedAttack(UBehaviorTreeComp
 		return EBTNodeResult::Failed;
 	}
 
-	const ACharacter* MyCharacter = Cast<ACharacter>(MyController->GetPawn());
+	ACharacter* MyCharacter = Cast<ACharacter>(MyController->GetPawn());
 	if (!MyCharacter)
 	{
 		return EBTNodeResult::Failed;
@@ -38,6 +38,7 @@ EBTNodeResult::Type UTBTTask_RangedAttack::PerformRangedAttack(UBehaviorTreeComp
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Instigator = MyCharacter;
 	const AActor* NewProjectile = GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
 
 	return NewProjectile ? EBTNodeResult::Succeeded : EBTNodeResult::Failed;

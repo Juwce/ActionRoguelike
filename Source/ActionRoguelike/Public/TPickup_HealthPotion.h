@@ -16,7 +16,7 @@ public:
 	ATPickup_HealthPotion();
 
 	UFUNCTION()
-	bool HealPawn(const APawn* Pawn) const;
+	bool HealPawn(const APawn* Pawn);
 
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 

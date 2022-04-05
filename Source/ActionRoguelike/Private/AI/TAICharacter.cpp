@@ -22,6 +22,8 @@ ATAICharacter::ATAICharacter()
 
 	// Assigns AI controller to character when spawned (4.27 default is "Placed" only)
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	
+	OnDeathLifeSpanDuration = 10.f;
 }
 
 void ATAICharacter::PostInitializeComponents()
@@ -32,7 +34,7 @@ void ATAICharacter::PostInitializeComponents()
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ATAICharacter::OnHealthChanged);
 }
 
-void ATAICharacter::OnPawnSeen(APawn* Pawn)
+void ATAICharacter::SetBBTargetActor(AActor* Actor)
 {
 	AAIController* AIController = Cast<AAIController>(GetController());
 	if (AIController)
@@ -40,8 +42,13 @@ void ATAICharacter::OnPawnSeen(APawn* Pawn)
 		UBlackboardComponent* BBComp = AIController->GetBlackboardComponent();
 		check(BBComp != nullptr);
 
-		BBComp->SetValueAsObject("TargetActor", Pawn);
+		BBComp->SetValueAsObject("TargetActor", Actor);
 	}
+}
+
+void ATAICharacter::OnPawnSeen(APawn* Pawn)
+{
+	SetBBTargetActor(Pawn);
 }
 
 void ATAICharacter::Die()
@@ -52,7 +59,7 @@ void ATAICharacter::Die()
 	}
 		
 	// stop BT
-	AAIController* AIController = Cast<AAIController>(GetController());
+	const AAIController* AIController = Cast<AAIController>(GetController());
 	if (ensure(AIController))
 	{
 		AIController->GetBrainComponent()->StopLogic("Killed");
@@ -72,6 +79,10 @@ void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponen
 	if (NewHealth <= 0.f)
 	{
 		Die();
+	}
+	else if (Delta < 0.f && InstigatorActor && InstigatorActor != this)
+	{
+		SetBBTargetActor(InstigatorActor);
 	}
 }
 

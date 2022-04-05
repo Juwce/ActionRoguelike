@@ -46,4 +46,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Audio")
 	USoundBase* ImpactSound;
 	
+	// If true, ensures that instigator is set when the projectile is spawned. Disable if not being spawned by a pawn.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bEnsureInstigator;
+	
 };

@@ -39,7 +39,7 @@ EBTNodeResult::Type UTBTTask_HealSelf::PerformHealSelf(UBehaviorTreeComponent& O
 		return EBTNodeResult::Failed;
 	}
 
-	OwnerAttributeComp->ApplyHealthChangeOverTime(TotalPointsToHeal, HealDuration, HealTicks);
+	OwnerAttributeComp->ApplyHealthChangeOverTime(Cast<AActor>(this), TotalPointsToHeal, HealDuration, HealTicks);
 	return EBTNodeResult::Succeeded;
 }
 

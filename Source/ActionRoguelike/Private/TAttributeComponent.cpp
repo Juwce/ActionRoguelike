@@ -18,7 +18,7 @@ UTAttributeComponent::UTAttributeComponent()
 	bCheat_TakeAlmostNoDamage = false;
 }
 
-void UTAttributeComponent::ApplyHealthChange(float Delta)
+void UTAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {
 	if (bCheat_TakeNoDamage)
 	{
@@ -34,10 +34,10 @@ void UTAttributeComponent::ApplyHealthChange(float Delta)
 	Health = FMath::Clamp(Health, 0.f, HealthMax);
 
 	const float AppliedDelta = Health - OldHealth;
-	OnHealthChanged.Broadcast(nullptr, this, Health, AppliedDelta);
+	OnHealthChanged.Broadcast(InstigatorActor, this, Health, AppliedDelta);
 }
 
-void UTAttributeComponent::ApplyHealthChangeOverTime(const float Delta, const float Duration, const int32 Ticks)
+void UTAttributeComponent::ApplyHealthChangeOverTime(AActor* InstigatorActor, const float Delta, const float Duration, const int32 Ticks)
 {
 	if (!ensure(Duration >= 0.f))
 	{
@@ -47,7 +47,7 @@ void UTAttributeComponent::ApplyHealthChangeOverTime(const float Delta, const fl
 	{
 		return;
 	}
-
+	
 	// TODO: Handle concurrent health change over time effects
 	if (GetWorld()->GetTimerManager().IsTimerActive(HealthChangeTimerHandle))
 	{
@@ -58,7 +58,7 @@ void UTAttributeComponent::ApplyHealthChangeOverTime(const float Delta, const fl
 	const float TickDelta = Delta / static_cast<float>(Ticks);
 	const float TickDuration = Duration / static_cast<float>(Ticks);
 	
-	HealthChangeOverTime_Tick(TickDelta, TickDuration);
+	HealthChangeOverTime_Tick(InstigatorActor, TickDelta, TickDuration);
 }
 
 void UTAttributeComponent::StopHealthChangeOverTime()
@@ -71,17 +71,17 @@ bool UTAttributeComponent::IsAlive() const
 	return Health > 0.f;
 }
 
-void UTAttributeComponent::HealthChangeOverTime_Tick(const float Delta, const float Duration)
+void UTAttributeComponent::HealthChangeOverTime_Tick(AActor* InstigatorActor, const float Delta, const float Duration)
 {
 	if (HealthChangeTicksLeft <= 0)
 	{
 		return;
 	}
 	
-	ApplyHealthChange(Delta);
+	ApplyHealthChange(InstigatorActor, Delta);
 	HealthChangeTicksLeft--;
 	
 	FTimerDelegate TimerDel;
-	TimerDel.BindLambda([=]() { HealthChangeOverTime_Tick(Delta, Duration); });
+	TimerDel.BindLambda([=]() { HealthChangeOverTime_Tick(InstigatorActor, Delta, Duration); });
 	GetWorld()->GetTimerManager().SetTimer(HealthChangeTimerHandle, TimerDel, Duration, false);
 }

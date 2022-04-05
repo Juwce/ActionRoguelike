@@ -21,11 +21,11 @@ public:
 	float GetHealthMax() { return HealthMax; }
 
 	UFUNCTION(BlueprintCallable)
-	void ApplyHealthChange(float Delta);
+	void ApplyHealthChange(AActor* InstigatorActor, float Delta);
 
 	// Apply a health change over the given duration, split up evenly over the specified number of ticks
 	UFUNCTION(BlueprintCallable)
-	void ApplyHealthChangeOverTime(float Delta, float Duration, int32 Ticks);
+	void ApplyHealthChangeOverTime(AActor* InstigatorActor, const float Delta, const float Duration, const int32 Ticks);
 
 	// Immediately stop any ongoing health change over time
 	void StopHealthChangeOverTime();
@@ -53,7 +53,7 @@ protected:
 	
 
 private:
-	void HealthChangeOverTime_Tick(float Delta, float Duration);
+	void HealthChangeOverTime_Tick(AActor* InstigatorActor, const float Delta, const float Duration);
 
 	FTimerHandle HealthChangeTimerHandle;
 	int32 HealthChangeTicksLeft;

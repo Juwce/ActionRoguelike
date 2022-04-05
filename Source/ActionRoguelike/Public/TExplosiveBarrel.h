@@ -26,6 +26,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float ExplosionRetriggerDelaySeconds;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float ExplosionDamage;
+	
 	ERadialImpulseFalloff ImpulseFalloff;
 
 public:	

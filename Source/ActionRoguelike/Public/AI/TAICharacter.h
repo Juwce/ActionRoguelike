@@ -20,6 +20,7 @@ public:
 protected:
 	
 	virtual void PostInitializeComponents() override;
+	void SetBBTargetActor(AActor* Actor);
 
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
@@ -33,4 +34,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UTAttributeComponent* AttributeComp;
+
+	// Lifespan of the character on death (Character is destroyed after this many seconds
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	float OnDeathLifeSpanDuration;
 };

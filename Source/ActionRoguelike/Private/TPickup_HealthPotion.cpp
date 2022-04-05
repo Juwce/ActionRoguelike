@@ -13,7 +13,7 @@ ATPickup_HealthPotion::ATPickup_HealthPotion()
 	HealthGiven = 75.f;
 }
 
-bool ATPickup_HealthPotion::HealPawn(const APawn* Pawn) const
+bool ATPickup_HealthPotion::HealPawn(const APawn* Pawn)
 {
 	if (!ensureMsgf(Pawn, TEXT("Instigator pawn is null! Instigator should always be set when interacting.")))
 	{
@@ -23,7 +23,7 @@ bool ATPickup_HealthPotion::HealPawn(const APawn* Pawn) const
 	UTAttributeComponent* AttributeComp = Cast<UTAttributeComponent>(Pawn->GetComponentByClass(UTAttributeComponent::StaticClass()));
 	if (AttributeComp && AttributeComp->GetHealth() < AttributeComp->GetHealthMax())
 	{
-		 AttributeComp->ApplyHealthChange(HealthGiven);
+		 AttributeComp->ApplyHealthChange(Cast<AActor>(this), HealthGiven);
 		 return true;
 	}
 	return false;

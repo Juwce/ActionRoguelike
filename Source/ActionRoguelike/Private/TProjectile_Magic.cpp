@@ -13,6 +13,7 @@ ATProjectile_Magic::ATProjectile_Magic()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	Damage = -20.f;
+	bEnsureInstigator = true;
 }
 
 // Called when the game starts or when spawned
@@ -43,14 +44,15 @@ void ATProjectile_Magic::Explode_Implementation()
 void ATProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor != GetInstigator())
+	APawn* InstigatorPawn = GetInstigator();
+	if (OtherActor && OtherActor != InstigatorPawn)
 	{
 		UTAttributeComponent* AttributeComp = Cast<UTAttributeComponent>(
 			OtherActor->GetComponentByClass(UTAttributeComponent::StaticClass())
 		);
 		if (AttributeComp)
 		{
-			AttributeComp->ApplyHealthChange(Damage);
+			AttributeComp->ApplyHealthChange(InstigatorPawn, Damage);
 			Explode();
 		}
 	}

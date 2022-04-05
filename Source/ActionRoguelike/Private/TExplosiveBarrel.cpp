@@ -30,6 +30,8 @@ ATExplosiveBarrel::ATExplosiveBarrel()
 
 	bCanExplode = true;
 	ExplosionRetriggerDelaySeconds = 1.f;
+	
+	ExplosionDamage = -50.f;
 }
 
 void ATExplosiveBarrel::Explode()
@@ -47,13 +49,13 @@ void ATExplosiveBarrel::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UP
 		Explode();
 
 		// TODO: have the impulse apply the damage instead
-		ATCharacter* TCharacter = Cast<ATCharacter>(Other);
+		const ATCharacter* TCharacter = Cast<ATCharacter>(Other);
 		if (TCharacter)
 		{
 			UTAttributeComponent* AttributeComp =Cast<UTAttributeComponent>(
 				TCharacter->GetComponentByClass(UTAttributeComponent::StaticClass()));
 
-			AttributeComp->ApplyHealthChange(-50.f); // TODO: make member variable
+			AttributeComp->ApplyHealthChange(this, ExplosionDamage);
 		}
 
 		bCanExplode = false;
