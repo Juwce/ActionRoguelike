@@ -23,10 +23,7 @@ protected:
 	
 	EBTNodeResult::Type PerformHealSelf(UBehaviorTreeComponent& OwnerComp);
 
-	bool FindAndSetOwnerAttributeComp(UBehaviorTreeComponent& OwnerComp);
-	
-	UPROPERTY()
-	UTAttributeComponent* OwnerAttributeComp = nullptr;
+	UTAttributeComponent* GetOwnerAttributeComp(UBehaviorTreeComponent& OwnerComp) const;
 
 	// How the heal value should be interpreted (percent of HealthMax, number of health points, etc.)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")

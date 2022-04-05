@@ -23,5 +23,4 @@ void ATAIController::BeginPlay()
 	{
 		RunBehaviorTree(BehaviorTree);
 	}
-	
 }

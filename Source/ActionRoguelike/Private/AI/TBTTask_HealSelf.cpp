@@ -9,22 +9,19 @@
 
 EBTNodeResult::Type UTBTTask_HealSelf::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (!OwnerAttributeComp)
-	{
-		const bool Success = FindAndSetOwnerAttributeComp(OwnerComp);
-		if (!Success)
-		{
-			return EBTNodeResult::Failed;
-		}
-	}
-	
 	return PerformHealSelf(OwnerComp);
 }
 
 EBTNodeResult::Type UTBTTask_HealSelf::PerformHealSelf(UBehaviorTreeComponent& OwnerComp)
 {
-	float TotalPointsToHeal = HealValueType == HealingType::HealthPoints;
+	UTAttributeComponent* OwnerAttributeComp = GetOwnerAttributeComp(OwnerComp);
+	if (!ensureMsgf(OwnerAttributeComp,
+				    TEXT("Owning pawn must have an Attribute Component to be able to heal. Please add one.")))
+	{
+		return EBTNodeResult::Failed;
+	}
 	
+	float TotalPointsToHeal;
 	if (HealValueType == HealingType::HealthPoints)
 	{
 		TotalPointsToHeal = HealValue;
@@ -39,33 +36,25 @@ EBTNodeResult::Type UTBTTask_HealSelf::PerformHealSelf(UBehaviorTreeComponent& O
 		return EBTNodeResult::Failed;
 	}
 
-	OwnerAttributeComp->ApplyHealthChangeOverTime(Cast<AActor>(this), TotalPointsToHeal, HealDuration, HealTicks);
+	OwnerAttributeComp->ApplyHealthChangeOverTime(OwnerAttributeComp->GetOwner(), TotalPointsToHeal, HealDuration, HealTicks);
 	return EBTNodeResult::Succeeded;
 }
 
-bool UTBTTask_HealSelf::FindAndSetOwnerAttributeComp(UBehaviorTreeComponent& OwnerComp)
+UTAttributeComponent* UTBTTask_HealSelf::GetOwnerAttributeComp(UBehaviorTreeComponent& OwnerComp) const
 {
 	const AAIController* MyController = OwnerComp.GetAIOwner();
 	if (!ensure(MyController))
 	{
-		return false;
+		return nullptr;
 	}
 
 	const APawn* MyPawn = Cast<APawn>(MyController->GetPawn());
 	if (!ensure(MyPawn))
 	{
-		return false;
+		return nullptr;
 	}
 
-	UTAttributeComponent* AttributeComp =
-		Cast<UTAttributeComponent>(MyPawn->GetComponentByClass(UTAttributeComponent::StaticClass()));
+	UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(MyPawn);
 
-	if (!ensureMsgf(AttributeComp,
-				    TEXT("Owning pawn must have an Attribute Component to be able to heal. Please add one.")))
-	{
-		return false;
-	}
-
-	OwnerAttributeComp = AttributeComp;
-	return true;
+	return AttributeComp;
 }

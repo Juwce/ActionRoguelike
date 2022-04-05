@@ -70,7 +70,7 @@ void ATAICharacter::Die()
 	GetMesh()->SetCollisionProfileName("Ragdoll");
 
 	// set lifespan (time to ragdoll and see corpse before destroying it)
-	SetLifeSpan(10.f);
+	SetLifeSpan(OnDeathLifeSpanDuration);
 }
 
 void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth,
