@@ -85,3 +85,24 @@ void UTAttributeComponent::HealthChangeOverTime_Tick(AActor* InstigatorActor, co
 	TimerDel.BindLambda([=]() { HealthChangeOverTime_Tick(InstigatorActor, Delta, Duration); });
 	GetWorld()->GetTimerManager().SetTimer(HealthChangeTimerHandle, TimerDel, Duration, false);
 }
+
+UTAttributeComponent* UTAttributeComponent::GetAttributes(const AActor* FromActor)
+{
+	if (FromActor)
+	{
+		return Cast<UTAttributeComponent>(FromActor->GetComponentByClass(UTAttributeComponent::StaticClass()));
+	}
+	
+	return nullptr;
+}
+
+bool UTAttributeComponent::IsActorAlive(const AActor* Actor)
+{
+	const UTAttributeComponent* AttributeComponent = GetAttributes(Actor);
+	if (AttributeComponent)
+	{
+		return AttributeComponent->IsAlive();
+	}
+	return false;
+}
+

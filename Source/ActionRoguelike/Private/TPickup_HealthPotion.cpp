@@ -20,7 +20,7 @@ bool ATPickup_HealthPotion::HealPawn(const APawn* Pawn)
 		return false;
 	}
 
-	UTAttributeComponent* AttributeComp = Cast<UTAttributeComponent>(Pawn->GetComponentByClass(UTAttributeComponent::StaticClass()));
+	UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(Pawn);
 	if (AttributeComp && AttributeComp->GetHealth() < AttributeComp->GetHealthMax())
 	{
 		 AttributeComp->ApplyHealthChange(Cast<AActor>(this), HealthGiven);

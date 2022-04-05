@@ -67,9 +67,7 @@ int32 ATGameModeBase::GetNumAliveBots()
 	for (TActorIterator<ATAICharacter> Iter(GetWorld()); Iter; ++Iter)
 	{
 		const ATAICharacter* Bot = *Iter;
-		UTAttributeComponent* AttributeComp = Cast<UTAttributeComponent>(
-			Bot->GetComponentByClass(UTAttributeComponent::StaticClass()));
-		if (ensure(AttributeComp) && AttributeComp->IsAlive())
+		if (UTAttributeComponent::IsActorAlive(Bot))
 		{
 			NumAliveBots++;
 		}

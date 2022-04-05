@@ -17,9 +17,13 @@ public:
 	// Sets default values for this component's properties
 	UTAttributeComponent();
 
-	float GetHealth() { return Health; }
-	float GetHealthMax() { return HealthMax; }
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	static UTAttributeComponent* GetAttributes(const AActor* FromActor);
 
+	// Checks if the actor is alive. If the actor does not have an attribute component or is null, this returns false.
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	static bool IsActorAlive(const AActor* Actor);
+	
 	UFUNCTION(BlueprintCallable)
 	void ApplyHealthChange(AActor* InstigatorActor, float Delta);
 
@@ -35,6 +39,9 @@ public:
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthChanged OnHealthChanged;
+	
+	float GetHealth() const { return Health; }
+	float GetHealthMax() const { return HealthMax; }
 	
 protected:
 

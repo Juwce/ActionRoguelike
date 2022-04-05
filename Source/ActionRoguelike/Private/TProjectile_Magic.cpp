@@ -47,9 +47,7 @@ void ATProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedComponent
 	APawn* InstigatorPawn = GetInstigator();
 	if (OtherActor && OtherActor != InstigatorPawn)
 	{
-		UTAttributeComponent* AttributeComp = Cast<UTAttributeComponent>(
-			OtherActor->GetComponentByClass(UTAttributeComponent::StaticClass())
-		);
+		UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(OtherActor);
 		if (AttributeComp)
 		{
 			AttributeComp->ApplyHealthChange(InstigatorPawn, Damage);

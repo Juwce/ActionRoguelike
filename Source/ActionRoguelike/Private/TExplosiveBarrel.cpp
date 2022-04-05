@@ -52,8 +52,7 @@ void ATExplosiveBarrel::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UP
 		const ATCharacter* TCharacter = Cast<ATCharacter>(Other);
 		if (TCharacter)
 		{
-			UTAttributeComponent* AttributeComp =Cast<UTAttributeComponent>(
-				TCharacter->GetComponentByClass(UTAttributeComponent::StaticClass()));
+			UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(TCharacter);
 
 			AttributeComp->ApplyHealthChange(this, ExplosionDamage);
 		}
