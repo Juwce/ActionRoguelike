@@ -8,6 +8,8 @@
 #include "DrawDebugHelpers.h"
 #include "TAttributeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Perception/PawnSensingComponent.h"
 
 // Sets default values
@@ -68,6 +70,9 @@ void ATAICharacter::Die()
 	// ragdoll - force all bones to use physics (bones can use physics or animation settings)
 	GetMesh()->SetAllBodiesSimulatePhysics(true);
 	GetMesh()->SetCollisionProfileName("Ragdoll");
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCharacterMovement()->DisableMovement();
 
 	// set lifespan (time to ragdoll and see corpse before destroying it)
 	SetLifeSpan(OnDeathLifeSpanDuration);
