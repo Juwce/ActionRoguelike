@@ -4,6 +4,7 @@
 #include "AI/TAICharacter.h"
 
 #include "AIController.h"
+#include "BrainComponent.h"
 #include "DrawDebugHelpers.h"
 #include "TAttributeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -28,7 +29,6 @@ void ATAICharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &ATAICharacter::OnPawnSeen);
-	
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ATAICharacter::OnHealthChanged);
 }
 
@@ -44,20 +44,34 @@ void ATAICharacter::OnPawnSeen(APawn* Pawn)
 	}
 }
 
-void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth,
-	float Delta)
+void ATAICharacter::Die()
 {
-	if (Delta < 0.f)
+	if (ensure(AttributeComp))
 	{
-		if (NewHealth <= 0.f)
-		{
-			// stop BT
+		AttributeComp->StopHealthChangeOverTime();
+	}
+		
+	// stop BT
+	AAIController* AIController = Cast<AAIController>(GetController());
+	if (ensure(AIController))
+	{
+		AIController->GetBrainComponent()->StopLogic("Killed");
+	}
 
-			// ragdoll
+	// ragdoll - force all bones to use physics (bones can use physics or animation settings)
+	GetMesh()->SetAllBodiesSimulatePhysics(true);
+	GetMesh()->SetCollisionProfileName("Ragdoll");
 
-			// set lifespan (time to ragdoll and see corpse before destroying it)
-			SetLifeSpan(10.f);
-		}
+	// set lifespan (time to ragdoll and see corpse before destroying it)
+	SetLifeSpan(10.f);
+}
+
+void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth,
+                                    float Delta)
+{
+	if (NewHealth <= 0.f)
+	{
+		Die();
 	}
 }
 

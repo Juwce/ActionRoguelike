@@ -17,12 +17,16 @@ class ACTIONROGUELIKE_API ATGameModeBase : public AGameModeBase
 	GENERATED_BODY()
 public:
 	ATGameModeBase();
+	
 	virtual void StartPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetMaxBotCount();
 
 protected:
 	void SpawnBotTimerElapsed();
 
-	int32 GetNumAliveBots() const;
+	int32 GetNumAliveBots();
 
 	UFUNCTION()
 	void OnSpawnQueryComplete(UEnvQueryInstanceBlueprintWrapper* EnvQueryInstanceBlueprintWrapper, EEnvQueryStatus::Type Arg);

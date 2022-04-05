@@ -61,6 +61,11 @@ void UTAttributeComponent::ApplyHealthChangeOverTime(const float Delta, const fl
 	HealthChangeOverTime_Tick(TickDelta, TickDuration);
 }
 
+void UTAttributeComponent::StopHealthChangeOverTime()
+{
+	GetWorld()->GetTimerManager().ClearTimer(HealthChangeTimerHandle);
+}
+
 bool UTAttributeComponent::IsAlive() const
 {
 	return Health > 0.f;

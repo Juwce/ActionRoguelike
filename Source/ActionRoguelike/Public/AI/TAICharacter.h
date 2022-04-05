@@ -23,7 +23,8 @@ protected:
 
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
-	
+	void Die();
+
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth, float Delta);
 

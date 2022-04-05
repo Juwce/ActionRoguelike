@@ -27,9 +27,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ApplyHealthChangeOverTime(float Delta, float Duration, int32 Ticks);
 
+	// Immediately stop any ongoing health change over time
+	void StopHealthChangeOverTime();
+
 	UFUNCTION(BlueprintCallable)
 	bool IsAlive() const;
-
+	
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthChanged OnHealthChanged;
 	

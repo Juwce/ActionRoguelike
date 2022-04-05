@@ -3,6 +3,7 @@
 
 #include "TGameModeBase.h"
 
+#include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
 #include "TAttributeComponent.h"
 #include "AI/TAICharacter.h"
@@ -25,16 +26,27 @@ void ATGameModeBase::StartPlay()
 		TimerHandle_SpawnBots, this, &ATGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
 }
 
-void ATGameModeBase::SpawnBotTimerElapsed()
+int32 ATGameModeBase::GetMaxBotCount()
 {
 	if (DifficultyCurve)
 	{
-		MaxBotCount = DifficultyCurve->GetFloatValue(GetWorld()->TimeSeconds);
+		return static_cast<int32>(DifficultyCurve->GetFloatValue(GetWorld()->TimeSeconds));
 	}
+	else
+	{
+		return MaxBotCount;
+	}
+}
+
+void ATGameModeBase::SpawnBotTimerElapsed()
+{
+	GetMaxBotCount();
 	
 	const int32 NumAliveBots = GetNumAliveBots();
-	if (NumAliveBots >= MaxBotCount)
+	if (NumAliveBots >= GetMaxBotCount())
 	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("At maximum bot capacity (%i / %i). Skipping bot spawn."), NumAliveBots, GetMaxBotCount());
 		return;
 	}
 	
@@ -49,12 +61,12 @@ void ATGameModeBase::SpawnBotTimerElapsed()
 	}
 }
 
-int32 ATGameModeBase::GetNumAliveBots() const
+int32 ATGameModeBase::GetNumAliveBots()
 {
 	int32 NumAliveBots = 0;
 	for (TActorIterator<ATAICharacter> Iter(GetWorld()); Iter; ++Iter)
 	{
-		ATAICharacter* Bot = *Iter;
+		const ATAICharacter* Bot = *Iter;
 		UTAttributeComponent* AttributeComp = Cast<UTAttributeComponent>(
 			Bot->GetComponentByClass(UTAttributeComponent::StaticClass()));
 		if (ensure(AttributeComp) && AttributeComp->IsAlive())
@@ -62,6 +74,8 @@ int32 ATGameModeBase::GetNumAliveBots() const
 			NumAliveBots++;
 		}
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Found %i out of max %i alive bots."), NumAliveBots, GetMaxBotCount());
 
 	return NumAliveBots;
 }
@@ -82,4 +96,5 @@ void ATGameModeBase::OnSpawnQueryComplete(UEnvQueryInstanceBlueprintWrapper* Que
 	}
 	
 	GetWorld()->SpawnActor<AActor>(MinionClass, Locations[0], FRotator::ZeroRotator);
+	DrawDebugSphere(GetWorld(), Locations[0], 50.f, 20, FColor::Blue, false, 60.f);
 }
