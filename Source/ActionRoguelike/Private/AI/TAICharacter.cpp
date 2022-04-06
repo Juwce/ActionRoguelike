@@ -26,6 +26,10 @@ ATAICharacter::ATAICharacter()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	
 	OnDeathLifeSpanDuration = 10.f;
+	
+	TimeToHitMaterialParamName = "TimeToHit";
+	HitFlashSpeedMaterialParamName = "HitFlashSpeed";
+	HitFlashSpeed = 1.f;
 }
 
 void ATAICharacter::PostInitializeComponents()
@@ -81,13 +85,23 @@ void ATAICharacter::Die()
 void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth,
                                     float Delta)
 {
-	if (NewHealth <= 0.f)
+	if (Delta < 0.f)
 	{
-		Die();
-	}
-	else if (Delta < 0.f && InstigatorActor && InstigatorActor != this)
-	{
-		SetBBTargetActor(InstigatorActor);
+		TriggerHitFlashEffect();
+
+		if (!OwningComp->IsAlive())
+		{
+			Die();
+		}
+		else if (InstigatorActor && InstigatorActor != this)
+		{
+			SetBBTargetActor(InstigatorActor);
+		}
 	}
 }
 
+void ATAICharacter::TriggerHitFlashEffect()
+{
+	GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitMaterialParamName, GetWorld()->TimeSeconds);
+	GetMesh()->SetScalarParameterValueOnMaterials(HitFlashSpeedMaterialParamName, HitFlashSpeed);
+}

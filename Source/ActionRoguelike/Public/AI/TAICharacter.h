@@ -38,4 +38,22 @@ protected:
 	// Lifespan of the character on death (Character is destroyed after this many seconds
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	float OnDeathLifeSpanDuration;
+
+	/*
+	 * Hit Flash Effect
+	 * TODO: Everything below is duplicated from the TCharacter class and could be moved to a base class or component
+	 */
+	void TriggerHitFlashEffect();
+	
+	// How quickly the flash upon being hit should happen
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | HitFlash")
+	float HitFlashSpeed;
+
+	// Material parameter name used to set the time to hit value
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects")
+	FName TimeToHitMaterialParamName;
+	
+	// Material parameter name used to set the hit flash speed value
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects")
+	FName HitFlashSpeedMaterialParamName;
 };
