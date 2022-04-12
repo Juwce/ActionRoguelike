@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "TAICharacter.generated.h"
 
+class UTWorldUserWidget;
 class UTAttributeComponent;
 class UPawnSensingComponent;
 UCLASS()
@@ -20,24 +21,45 @@ public:
 protected:
 	
 	virtual void PostInitializeComponents() override;
+	
 	void SetBBTargetActor(AActor* Actor);
 
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
+	
 	void Die();
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth, float Delta);
+
+	UFUNCTION(BlueprintCallable)
+	void ActivateHealthBarWidget();
+
+	UFUNCTION(BlueprintCallable)
+	void DeactivateHealthBarWidget();
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UPawnSensingComponent* PawnSensingComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UTAttributeComponent* AttributeComp;
-
+	
 	// Lifespan of the character on death (Character is destroyed after this many seconds
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	float OnDeathLifeSpanDuration;
+	
+	/*
+	 * Health Bar Widget
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> HealthBarWidgetClass;
+
+	// Health bar will be placed at this component's location
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	USceneComponent* HealthBarLocationComp;
+	
+	UPROPERTY()
+	UTWorldUserWidget* ActiveHealthBarWidget;
 
 	/*
 	 * Hit Flash Effect

@@ -22,11 +22,11 @@ EBTNodeResult::Type UTBTTask_HealSelf::PerformHealSelf(UBehaviorTreeComponent& O
 	}
 	
 	float TotalPointsToHeal;
-	if (HealValueType == HealingType::HealthPoints)
+	if (HealValueType == EHealingType::HealthPoints)
 	{
 		TotalPointsToHeal = HealValue;
 	}
-	else if (HealValueType == HealingType::PercentOfHealthMax)
+	else if (HealValueType == EHealingType::PercentOfHealthMax)
 	{
 		TotalPointsToHeal = HealValue * OwnerAttributeComp->GetHealthMax();
 	}

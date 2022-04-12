@@ -7,6 +7,7 @@
 #include "BrainComponent.h"
 #include "DrawDebugHelpers.h"
 #include "TAttributeComponent.h"
+#include "TWorldUserWidget.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -30,6 +31,9 @@ ATAICharacter::ATAICharacter()
 	TimeToHitMaterialParamName = "TimeToHit";
 	HitFlashSpeedMaterialParamName = "HitFlashSpeed";
 	HitFlashSpeed = 1.f;
+
+	HealthBarLocationComp = CreateDefaultSubobject<USceneComponent>("HealthBarLocation");
+	HealthBarLocationComp->SetupAttachment(RootComponent);
 }
 
 void ATAICharacter::PostInitializeComponents()
@@ -80,6 +84,8 @@ void ATAICharacter::Die()
 
 	// set lifespan (time to ragdoll and see corpse before destroying it)
 	SetLifeSpan(OnDeathLifeSpanDuration);
+
+	DeactivateHealthBarWidget();
 }
 
 void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth,
@@ -88,6 +94,7 @@ void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponen
 	if (Delta < 0.f)
 	{
 		TriggerHitFlashEffect();
+		ActivateHealthBarWidget();
 
 		if (!OwningComp->IsAlive())
 		{
@@ -97,6 +104,31 @@ void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponen
 		{
 			SetBBTargetActor(InstigatorActor);
 		}
+	}
+}
+
+void ATAICharacter::ActivateHealthBarWidget()
+{
+	if (ActiveHealthBarWidget)
+	{
+		return;
+	}
+	
+	ActiveHealthBarWidget = CreateWidget<UTWorldUserWidget>(GetWorld(), HealthBarWidgetClass);
+	if (ensure(ActiveHealthBarWidget))
+	{
+		ActiveHealthBarWidget->WorldOffset = HealthBarLocationComp->GetRelativeLocation();
+		ActiveHealthBarWidget->SetAttachedActor(this);
+		ActiveHealthBarWidget->AddToViewport();
+	}
+}
+
+void ATAICharacter::DeactivateHealthBarWidget()
+{
+	if (ActiveHealthBarWidget)
+	{
+		ActiveHealthBarWidget->RemoveFromViewport();
+		ActiveHealthBarWidget = nullptr;
 	}
 }
 

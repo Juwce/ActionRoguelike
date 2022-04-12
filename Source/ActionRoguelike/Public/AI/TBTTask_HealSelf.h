@@ -27,7 +27,7 @@ protected:
 
 	// How the heal value should be interpreted (percent of HealthMax, number of health points, etc.)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
-	HealingType HealValueType;
+	EHealingType HealValueType;
 
 	// Amount to heal by: HealValueType determines how this value is interpreted (e.g. whether this value is a percent of HealthMax or number of health points to heal by)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")

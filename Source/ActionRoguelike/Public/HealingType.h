@@ -4,7 +4,7 @@
 #include "HealingType.generated.h"
 
 UENUM(BlueprintType)
-enum class HealingType : uint8
+enum class EHealingType : uint8
 {
 	PercentOfHealthMax = 0,
 	HealthPoints = 1
