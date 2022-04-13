@@ -26,10 +26,13 @@ public:
 protected:
 	void SpawnBotTimerElapsed();
 
-	int32 GetNumAliveBots();
-
 	UFUNCTION()
 	void OnSpawnQueryComplete(UEnvQueryInstanceBlueprintWrapper* EnvQueryInstanceBlueprintWrapper, EEnvQueryStatus::Type Arg);
+
+	int32 GetNumAliveBots();
+
+	UFUNCTION(Exec)
+	void CheatKillAllBots();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")

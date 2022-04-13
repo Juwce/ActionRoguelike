@@ -78,6 +78,20 @@ int32 ATGameModeBase::GetNumAliveBots()
 	return NumAliveBots;
 }
 
+void ATGameModeBase::CheatKillAllBots()
+{
+	for (TActorIterator<ATAICharacter> Iter(GetWorld()); Iter; ++Iter)
+	{
+		ATAICharacter* Bot = *Iter;
+		UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(Bot);
+		if (AttributeComp && AttributeComp->IsAlive())
+		{
+			// TODO: decide who kill credit goes to
+			AttributeComp->Kill(this);
+		}
+	}
+}
+
 void ATGameModeBase::OnSpawnQueryComplete(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
 {
 	if (QueryStatus != EEnvQueryStatus::Success)

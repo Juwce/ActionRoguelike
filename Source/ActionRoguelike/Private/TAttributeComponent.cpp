@@ -71,6 +71,11 @@ bool UTAttributeComponent::IsAlive() const
 	return Health > 0.f;
 }
 
+void UTAttributeComponent::Kill(AActor* InstigatorActor)
+{
+	ApplyHealthChange(InstigatorActor, -GetHealth());
+}
+
 void UTAttributeComponent::HealthChangeOverTime_Tick(AActor* InstigatorActor, const float Delta, const float Duration)
 {
 	if (HealthChangeTicksLeft <= 0)

@@ -40,13 +40,18 @@ void ATProjectileBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
+	SphereComp->OnComponentHit.AddDynamic(this, &ATProjectileBase::OnActorHit);
+}
+
+void ATProjectileBase::BeginPlay()
+{
+	Super::BeginPlay();
+	
 	if (bEnsureInstigator)
 	{
 		ensureMsgf(GetInstigator(), TEXT("Magic projectiles must be spawned with an instigator by default, please set one,"
 										 " or change bEnsureInstigator to true"));
 	}
-
-	SphereComp->OnComponentHit.AddDynamic(this, &ATProjectileBase::OnActorHit);
 }
 
 void ATProjectileBase::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,

@@ -32,16 +32,26 @@ public:
 	void ApplyHealthChangeOverTime(AActor* InstigatorActor, const float Delta, const float Duration, const int32 Ticks);
 
 	// Immediately stop any ongoing health change over time
+	UFUNCTION(BlueprintCallable)
 	void StopHealthChangeOverTime();
 
 	UFUNCTION(BlueprintCallable)
 	bool IsAlive() const;
-	
-	UPROPERTY(BlueprintAssignable)
-	FOnHealthChanged OnHealthChanged;
+
+	UFUNCTION(BlueprintCallable)
+	void Kill(AActor* InstigatorActor);
 	
 	float GetHealth() const { return Health; }
 	float GetHealthMax() const { return HealthMax; }
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnHealthChanged OnHealthChanged;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cheats")
+	bool bCheat_TakeNoDamage;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cheats")
+	bool bCheat_TakeAlmostNoDamage;
 	
 protected:
 
@@ -51,12 +61,6 @@ protected:
 	// Health Max, Stamina, Strength
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	float HealthMax;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cheats")
-	bool bCheat_TakeNoDamage;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cheats")
-	bool bCheat_TakeAlmostNoDamage;
 	
 
 private:

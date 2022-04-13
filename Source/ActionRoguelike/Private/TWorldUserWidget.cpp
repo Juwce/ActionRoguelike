@@ -35,7 +35,7 @@ void UTWorldUserWidget::TranslateBoxToAttachedLocation()
 		AttachedActor->GetActorLocation() + WorldOffset,
 		ScreenPosition);
 
-	if (ensure(bWorldProjectionSucceeded))
+	if (bWorldProjectionSucceeded)
 	{
 		const float ViewportScale = UWidgetLayoutLibrary::GetViewportScale(GetWorld());
 		ParentSizeBox->SetRenderTranslation(ScreenPosition / ViewportScale);
