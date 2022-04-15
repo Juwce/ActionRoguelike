@@ -3,6 +3,11 @@
 
 #include "TAttributeComponent.h"
 
+#include "TGameModeBase.h"
+
+static TAutoConsoleVariable<float> CVarDamageMultiplier(
+	TEXT("ti.DamageMultiplier"), 1.f, TEXT("Global damage modifier for Attribute Component."), ECVF_Cheat);
+
 // Sets default values for this component's properties
 UTAttributeComponent::UTAttributeComponent()
 {
@@ -28,6 +33,12 @@ void UTAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	{
 		Delta = FMath::Max(Delta, -1.f);
 	}
+
+	if (Delta < 0.f)
+	{
+		const float DamageMultiplier = CVarDamageMultiplier.GetValueOnGameThread();
+		Delta *= DamageMultiplier;
+	}
 	
 	const float OldHealth = Health;
 	Health += Delta;
@@ -35,6 +46,16 @@ void UTAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 
 	const float AppliedDelta = Health - OldHealth;
 	OnHealthChanged.Broadcast(InstigatorActor, this, Health, AppliedDelta);
+
+	// Died
+	if (AppliedDelta < 0.f && Health == 0.f)
+	{
+		ATGameModeBase* GM = GetWorld()->GetAuthGameMode<ATGameModeBase>();
+		if (GM)
+		{
+			GM->OnActorKilled(GetOwner(), InstigatorActor);
+		}
+	}
 }
 
 void UTAttributeComponent::ApplyHealthChangeOverTime(AActor* InstigatorActor, const float Delta, const float Duration, const int32 Ticks)

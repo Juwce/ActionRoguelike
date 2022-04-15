@@ -7,6 +7,11 @@
 #include "TGameplayInterface.h"
 #include "Camera/CameraComponent.h"
 
+static TAutoConsoleVariable<bool> CVarDrawInteractionDebug(
+	TEXT("ti.DrawDebugInteractionComponent"),
+	false,
+	TEXT("Draws interaction component debug helpers to the screen."),
+	ECVF_Cheat);
 
 // Sets default values for this component's properties
 UTInteractionComponent::UTInteractionComponent()
@@ -24,10 +29,11 @@ bool UTInteractionComponent::ComputeInteractCandidates(TArray<FHitResult>& Hits)
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic); // only interact with WorldDynamic
 
 	// Trace Start/End
-	AActor* MyOwner = GetOwner();
+	const AActor* MyOwner = GetOwner();
 	FVector TraceStart;
 	FRotator TraceRotation;
-	UCameraComponent* OwnersCamera = Cast<UCameraComponent>(MyOwner->GetComponentByClass(UCameraComponent::StaticClass()));
+	const UCameraComponent* OwnersCamera = Cast<UCameraComponent>(
+		MyOwner->GetComponentByClass(UCameraComponent::StaticClass()));
 	if (OwnersCamera)
 	{
 		TraceStart = OwnersCamera->GetComponentLocation();
@@ -46,11 +52,15 @@ bool UTInteractionComponent::ComputeInteractCandidates(TArray<FHitResult>& Hits)
 	const bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, TraceStart, TraceEnd, FQuat::Identity, ObjectQueryParams, Shape);
 
 	// Debug
-	const FColor DebugLineColor = bBlockingHit ? FColor::Green : FColor::Red;
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, DebugLineColor, false, 2.f, 0, 2.f);
-	for (FHitResult Hit : Hits)
+	bool bDrawDebug = CVarDrawInteractionDebug.GetValueOnGameThread();
+	if (bDrawDebug)
 	{
-		DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 32, FColor::Green, false, 2.f, 0, 0.5f);
+		const FColor DebugLineColor = bBlockingHit ? FColor::Green : FColor::Red;
+		DrawDebugLine(GetWorld(), TraceStart, TraceEnd, DebugLineColor, false, 2.f, 0, 2.f);
+		for (FHitResult Hit : Hits)
+		{
+			DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 32, FColor::Green, false, 2.f, 0, 0.5f);
+		}
 	}
 
 	return bBlockingHit;

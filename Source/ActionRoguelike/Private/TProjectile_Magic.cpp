@@ -4,6 +4,7 @@
 #include "TProjectile_Magic.h"
 
 #include "TAttributeComponent.h"
+#include "TGameplayFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -45,12 +46,11 @@ void ATProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedComponent
                                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	APawn* InstigatorPawn = GetInstigator();
-	if (OtherActor && OtherActor != InstigatorPawn)
+	if (OtherActor && OtherActor != InstigatorPawn && UTAttributeComponent::GetAttributes(OtherActor))
 	{
-		UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(OtherActor);
-		if (AttributeComp)
+		if (UTGameplayFunctionLibrary::ApplyDirectionalDamage(
+			InstigatorPawn, OtherActor, Damage, SweepResult))
 		{
-			AttributeComp->ApplyHealthChange(InstigatorPawn, Damage);
 			Explode();
 		}
 	}

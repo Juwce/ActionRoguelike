@@ -22,7 +22,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	int32 GetMaxBotCount();
-
+	
+	void OnActorKilled(AActor* VictimActor, AActor* InstigatorActor);
+	
 protected:
 	void SpawnBotTimerElapsed();
 
@@ -34,7 +36,9 @@ protected:
 	UFUNCTION(Exec)
 	void CheatKillAllBots();
 
-protected:
+	UFUNCTION()
+	void RespawnPlayer(AController* Controller);
+
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	float SpawnTimerInterval;
 
@@ -53,4 +57,6 @@ protected:
 	
 	FTimerHandle TimerHandle_SpawnBots;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	float PlayerRespawnDelay;
 };

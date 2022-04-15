@@ -6,14 +6,19 @@
 #include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
 #include "TAttributeComponent.h"
+#include "TCharacter.h"
 #include "AI/TAICharacter.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
+
+static TAutoConsoleVariable<bool> CVarSpawnBots(
+	TEXT("ti.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
 
 ATGameModeBase::ATGameModeBase()
 {
 	SpawnTimerInterval = 2.f;
 	MaxBotCount = 10.f;
+	PlayerRespawnDelay = 2.f;
 }
 
 void ATGameModeBase::StartPlay()
@@ -40,6 +45,12 @@ int32 ATGameModeBase::GetMaxBotCount()
 
 void ATGameModeBase::SpawnBotTimerElapsed()
 {
+	if (!CVarSpawnBots.GetValueOnGameThread())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Bot spawning disabled via cvar \"CVarSpawnBots\""));
+		return;
+	}
+	
 	GetMaxBotCount();
 	
 	const int32 NumAliveBots = GetNumAliveBots();
@@ -90,6 +101,31 @@ void ATGameModeBase::CheatKillAllBots()
 			AttributeComp->Kill(this);
 		}
 	}
+}
+
+void ATGameModeBase::RespawnPlayer(AController* Controller)
+{
+	if (Controller)
+	{
+		Controller->UnPossess();
+		RestartPlayer(Controller);
+	}
+}
+
+void ATGameModeBase::OnActorKilled(AActor* VictimActor, AActor* InstigatorActor)
+{
+	ATCharacter* Player = Cast<ATCharacter>(VictimActor);
+	if (Player)
+	{
+		FTimerHandle TimerHandle_RespawnDelay;
+
+		FTimerDelegate Delegate;
+		Delegate.BindUFunction(this, "RespawnPlayer", Player->GetController());
+		
+		GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay, Delegate, PlayerRespawnDelay, false);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(InstigatorActor));
 }
 
 void ATGameModeBase::OnSpawnQueryComplete(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
