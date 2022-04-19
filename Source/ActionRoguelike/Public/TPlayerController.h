@@ -22,14 +22,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	ATPlayerState* GetTPlayerState() const;
 
-protected:
+	bool HasEnoughCredits(int32 Credits) const;
+	
+	// TODO: Move credits functionality into an interface and have this class inherit from it (we want non-player actors to be able to work with credits...)
 	UFUNCTION(BlueprintCallable)
 	void ApplyCreditChange(int32 Delta);
 
-	// Spends specified number of credits if available, otherwise no credits are spend and this returns false.
-	UFUNCTION(BlueprintCallable)
-	bool SpendCredits(int32 Credits);
-
+protected:
 	UPROPERTY(BlueprintAssignable)
 	FOnCreditsChanged OnCreditsChanged;
 };

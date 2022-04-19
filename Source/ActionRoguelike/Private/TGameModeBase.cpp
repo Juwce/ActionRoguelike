@@ -7,6 +7,7 @@
 #include "EngineUtils.h"
 #include "TAttributeComponent.h"
 #include "TCharacter.h"
+#include "TPlayerController.h"
 #include "TPlayerState.h"
 #include "AI/TAICharacter.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
@@ -50,15 +51,29 @@ void ATGameModeBase::CheatKillAllBots()
 
 void ATGameModeBase::OnActorKilled(AActor* VictimActor, AActor* InstigatorActor)
 {
+	// If the player died, respawn them on a delay
 	ATCharacter* Player = Cast<ATCharacter>(VictimActor);
 	if (Player)
 	{
 		FTimerHandle TimerHandle_RespawnDelay;
-
 		FTimerDelegate Delegate;
 		Delegate.BindUFunction(this, "RespawnPlayer", Player->GetController());
-		
 		GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay, Delegate, PlayerRespawnDelay, false);
+	}
+
+	// If a bot died and a player controlled pawn killed it, assign credit to that player
+	const bool bVictimIsAICharacter = Cast<ATAICharacter>(VictimActor) != nullptr;
+	if (bVictimIsAICharacter)
+	{
+		const APawn* InstigatorPawn = Cast<APawn>(InstigatorActor);
+		if (InstigatorPawn)
+		{
+			ATPlayerController* InstigatorPlayer = Cast<ATPlayerController>(InstigatorPawn->GetController());
+			if (InstigatorPlayer)
+			{
+				InstigatorPlayer->ApplyCreditChange(BotKillCreditDelta);
+			}
+		}
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(InstigatorActor));

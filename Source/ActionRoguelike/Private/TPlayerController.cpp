@@ -13,6 +13,17 @@ ATPlayerState* ATPlayerController::GetTPlayerState() const
 	return TPlayerState;
 }
 
+bool ATPlayerController::HasEnoughCredits(const int32 Credits) const
+{
+	ATPlayerState* TPlayerState = GetTPlayerState();
+	if (TPlayerState)
+	{
+		return Credits <= TPlayerState->GetCredits();
+	}
+	
+	return false;
+}
+
 void ATPlayerController::ApplyCreditChange(const int32 Delta)
 {
 	ATPlayerState* TPlayerState = GetTPlayerState();
@@ -22,17 +33,3 @@ void ATPlayerController::ApplyCreditChange(const int32 Delta)
 		OnCreditsChanged.Broadcast(this, TPlayerState->GetCredits(), Delta);
 	}
 }
-
-bool ATPlayerController::SpendCredits(const int32 Credits)
-{
-	const ATPlayerState* TPlayerState = GetTPlayerState();
-	if (TPlayerState && Credits <= TPlayerState->GetCredits())
-	{
-		ApplyCreditChange(-Credits);
-		return true;
-	}
-	
-	return false;
-}
-
-

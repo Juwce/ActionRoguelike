@@ -4,6 +4,8 @@
 #include "TPickupActor.h"
 
 #include "TCharacter.h"
+#include "TPlayerController.h"
+#include "TPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -21,11 +23,35 @@ ATPickupActor::ATPickupActor()
 
 void ATPickupActor::Interact_Implementation(APawn* InstigatorPawn)
 {
-	if (ensure(InstigatorPawn))
+	if (!ensure(InstigatorPawn))
 	{
-		PlayInteractSound();
-		DeactivateAndCooldown();
+		return;
 	}
+
+	if (CanPickup(InstigatorPawn))
+	{
+		DoPickup(InstigatorPawn);
+	}
+}
+
+bool ATPickupActor::CanPickup(const APawn* InstigatorPawn)
+{
+	const ATPlayerController* InstigatorPlayer = Cast<ATPlayerController>(InstigatorPawn->GetController());
+	if (InstigatorPlayer)
+	{
+		return InstigatorPlayer->HasEnoughCredits(InteractionCreditCost);
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("Interacting actor %s does not implement credits. Credit cost / reward for"
+								  " interacting with this pickup will not apply."), *GetNameSafe(InstigatorPawn));
+	return false;
+}
+
+void ATPickupActor::DoPickup(APawn* InstigatorPawn)
+{
+	PlayInteractSound();
+	ApplyInteractionCredits(InstigatorPawn);
+	DeactivateAndCooldown();
 }
 
 void ATPickupActor::DeactivateAndCooldown()
@@ -35,7 +61,13 @@ void ATPickupActor::DeactivateAndCooldown()
 	GetWorldTimerManager().SetTimer(CooldownTimerHandle, this, &ATPickupActor::Activate, CooldownDuration, false);
 }
 
-void ATPickupActor::PlayInteractSound()
+void ATPickupActor::Activate()
+{
+	SetActorEnableCollision(true);
+	SetActorHiddenInGame(false);
+}
+
+void ATPickupActor::PlayInteractSound() const
 {
 	if (InteractSound)
 	{
@@ -43,8 +75,11 @@ void ATPickupActor::PlayInteractSound()
 	}
 }
 
-void ATPickupActor::Activate()
+void ATPickupActor::ApplyInteractionCredits(APawn* InstigatorPawn)
 {
-	SetActorEnableCollision(true);
-	SetActorHiddenInGame(false);
+	ATPlayerController* InstigatorPlayer = Cast<ATPlayerController>(InstigatorPawn->GetController());
+	if (InstigatorPlayer)
+	{
+		InstigatorPlayer->ApplyCreditChange(-InteractionCreditCost + InteractionCreditReward);
+	}
 }

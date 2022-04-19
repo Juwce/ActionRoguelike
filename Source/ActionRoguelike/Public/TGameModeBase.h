@@ -28,14 +28,6 @@ public:
 	
 	void OnActorKilled(AActor* VictimActor, AActor* InstigatorActor);
 
-	// Amount of credits to add/subtract when a coin is picked up
-	UPROPERTY(EditDefaultsOnly, Category = "Game Credits")
-	int32 CoinPickupCreditDelta;
-
-	// Number of credits to add/subtract when a health pickup is picked up
-	UPROPERTY(EditDefaultsOnly, Category = "Game Credits")
-	int32 HealthPickupCreditDelta;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Game Credits")
 	int32 BotKillCreditDelta;
 	
