@@ -7,6 +7,7 @@
 #include "EngineUtils.h"
 #include "TAttributeComponent.h"
 #include "TCharacter.h"
+#include "TPlayerState.h"
 #include "AI/TAICharacter.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
@@ -16,9 +17,11 @@ static TAutoConsoleVariable<bool> CVarSpawnBots(
 
 ATGameModeBase::ATGameModeBase()
 {
-	SpawnTimerInterval = 2.f;
+	SpawnBotIntervalSeconds = 2.f;
 	MaxBotCount = 10.f;
 	PlayerRespawnDelay = 2.f;
+
+	PlayerStateClass = ATPlayerState::StaticClass();
 }
 
 void ATGameModeBase::StartPlay()
@@ -28,9 +31,54 @@ void ATGameModeBase::StartPlay()
 	// Continuous timer to spawn in more bots.
 	// Actual amount of bots and whether it's allowed to spawn determined by spawn log later in the chain...
 	GetWorldTimerManager().SetTimer(
-		TimerHandle_SpawnBots, this, &ATGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
+		TimerHandle_SpawnBot, this, &ATGameModeBase::TrySpawnBot, SpawnBotIntervalSeconds, true);
 }
 
+void ATGameModeBase::CheatKillAllBots()
+{
+	for (TActorIterator<ATAICharacter> Iter(GetWorld()); Iter; ++Iter)
+	{
+		ATAICharacter* Bot = *Iter;
+		UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(Bot);
+		if (AttributeComp && AttributeComp->IsAlive())
+		{
+			// TODO: decide who kill credit goes to
+			AttributeComp->Kill(this);
+		}
+	}
+}
+
+void ATGameModeBase::OnActorKilled(AActor* VictimActor, AActor* InstigatorActor)
+{
+	ATCharacter* Player = Cast<ATCharacter>(VictimActor);
+	if (Player)
+	{
+		FTimerHandle TimerHandle_RespawnDelay;
+
+		FTimerDelegate Delegate;
+		Delegate.BindUFunction(this, "RespawnPlayer", Player->GetController());
+		
+		GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay, Delegate, PlayerRespawnDelay, false);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(InstigatorActor));
+}
+
+/*
+ * Player Spawning
+ */
+void ATGameModeBase::RespawnPlayer(AController* Controller)
+{
+	if (Controller)
+	{
+		Controller->UnPossess();
+		RestartPlayer(Controller);
+	}
+}
+
+/*
+ * Bot Spawning
+ */
 int32 ATGameModeBase::GetMaxBotCount()
 {
 	if (DifficultyCurve)
@@ -43,7 +91,24 @@ int32 ATGameModeBase::GetMaxBotCount()
 	}
 }
 
-void ATGameModeBase::SpawnBotTimerElapsed()
+int32 ATGameModeBase::GetNumAliveBots()
+{
+	int32 NumAliveBots = 0;
+	for (TActorIterator<ATAICharacter> Iter(GetWorld()); Iter; ++Iter)
+	{
+		const ATAICharacter* Bot = *Iter;
+		if (UTAttributeComponent::IsActorAlive(Bot))
+		{
+			NumAliveBots++;
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Found %i out of max %i alive bots."), NumAliveBots, GetMaxBotCount());
+
+	return NumAliveBots;
+}
+
+void ATGameModeBase::TrySpawnBot()
 {
 	if (!CVarSpawnBots.GetValueOnGameThread())
 	{
@@ -68,67 +133,11 @@ void ATGameModeBase::SpawnBotTimerElapsed()
 
 	if (ensure(QueryInstance))
 	{
-		QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ATGameModeBase::OnSpawnQueryComplete);
+		QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ATGameModeBase::OnSpawnBotQueryComplete);
 	}
 }
 
-int32 ATGameModeBase::GetNumAliveBots()
-{
-	int32 NumAliveBots = 0;
-	for (TActorIterator<ATAICharacter> Iter(GetWorld()); Iter; ++Iter)
-	{
-		const ATAICharacter* Bot = *Iter;
-		if (UTAttributeComponent::IsActorAlive(Bot))
-		{
-			NumAliveBots++;
-		}
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Found %i out of max %i alive bots."), NumAliveBots, GetMaxBotCount());
-
-	return NumAliveBots;
-}
-
-void ATGameModeBase::CheatKillAllBots()
-{
-	for (TActorIterator<ATAICharacter> Iter(GetWorld()); Iter; ++Iter)
-	{
-		ATAICharacter* Bot = *Iter;
-		UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(Bot);
-		if (AttributeComp && AttributeComp->IsAlive())
-		{
-			// TODO: decide who kill credit goes to
-			AttributeComp->Kill(this);
-		}
-	}
-}
-
-void ATGameModeBase::RespawnPlayer(AController* Controller)
-{
-	if (Controller)
-	{
-		Controller->UnPossess();
-		RestartPlayer(Controller);
-	}
-}
-
-void ATGameModeBase::OnActorKilled(AActor* VictimActor, AActor* InstigatorActor)
-{
-	ATCharacter* Player = Cast<ATCharacter>(VictimActor);
-	if (Player)
-	{
-		FTimerHandle TimerHandle_RespawnDelay;
-
-		FTimerDelegate Delegate;
-		Delegate.BindUFunction(this, "RespawnPlayer", Player->GetController());
-		
-		GetWorldTimerManager().SetTimer(TimerHandle_RespawnDelay, Delegate, PlayerRespawnDelay, false);
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(InstigatorActor));
-}
-
-void ATGameModeBase::OnSpawnQueryComplete(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
+void ATGameModeBase::OnSpawnBotQueryComplete(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
 {
 	if (QueryStatus != EEnvQueryStatus::Success)
 	{
@@ -143,6 +152,6 @@ void ATGameModeBase::OnSpawnQueryComplete(UEnvQueryInstanceBlueprintWrapper* Que
 		return;
 	}
 	
-	GetWorld()->SpawnActor<AActor>(MinionClass, Locations[0], FRotator::ZeroRotator);
+	GetWorld()->SpawnActor<AActor>(SpawnedBotClass, Locations[0], FRotator::ZeroRotator);
 	DrawDebugSphere(GetWorld(), Locations[0], 50.f, 20, FColor::Blue, false, 60.f);
 }
