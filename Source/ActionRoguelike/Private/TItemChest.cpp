@@ -18,20 +18,6 @@ ATItemChest::ATItemChest()
 	TargetPitch = 110;
 }
 
-// Called when the game starts or when spawned
-void ATItemChest::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void ATItemChest::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 void ATItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
 	LidMesh->SetRelativeRotation(FRotator(110, 0, 0));

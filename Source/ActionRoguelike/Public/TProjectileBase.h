@@ -19,10 +19,10 @@ public:
 	ATProjectileBase();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
 	virtual void PostInitializeComponents() override;
+
+	virtual void BeginPlay() override;
 
 	UFUNCTION()
 	void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -47,5 +47,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Audio")
 	USoundBase* ImpactSound;
+	
+	// If true, ensures that instigator is set when the projectile is spawned. Disable if not being spawned by a pawn.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bEnsureInstigator;
 	
 };

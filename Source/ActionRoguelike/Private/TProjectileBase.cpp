@@ -32,11 +32,8 @@ ATProjectileBase::ATProjectileBase()
 	AudioComp = CreateDefaultSubobject<UAudioComponent>("AudioComp");
 	AudioComp->SetupAttachment(SphereComp);
 	AudioComp->SetAutoActivate(true);
-}
 
-void ATProjectileBase::BeginPlay()
-{
-	Super::BeginPlay();
+	bEnsureInstigator = false;
 }
 
 void ATProjectileBase::PostInitializeComponents()
@@ -44,6 +41,17 @@ void ATProjectileBase::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	SphereComp->OnComponentHit.AddDynamic(this, &ATProjectileBase::OnActorHit);
+}
+
+void ATProjectileBase::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (bEnsureInstigator)
+	{
+		ensureMsgf(GetInstigator(), TEXT("Magic projectiles must be spawned with an instigator by default, please set one,"
+										 " or change bEnsureInstigator to true"));
+	}
 }
 
 void ATProjectileBase::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,

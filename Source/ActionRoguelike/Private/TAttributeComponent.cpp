@@ -3,6 +3,11 @@
 
 #include "TAttributeComponent.h"
 
+#include "TGameModeBase.h"
+
+static TAutoConsoleVariable<float> CVarDamageMultiplier(
+	TEXT("ti.DamageMultiplier"), 1.f, TEXT("Global damage modifier for Attribute Component."), ECVF_Cheat);
+
 // Sets default values for this component's properties
 UTAttributeComponent::UTAttributeComponent()
 {
@@ -18,7 +23,7 @@ UTAttributeComponent::UTAttributeComponent()
 	bCheat_TakeAlmostNoDamage = false;
 }
 
-bool UTAttributeComponent::ApplyHealthChange(float Delta)
+void UTAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {
 	if (bCheat_TakeNoDamage)
 	{
@@ -28,19 +33,102 @@ bool UTAttributeComponent::ApplyHealthChange(float Delta)
 	{
 		Delta = FMath::Max(Delta, -1.f);
 	}
+
+	if (Delta < 0.f)
+	{
+		const float DamageMultiplier = CVarDamageMultiplier.GetValueOnGameThread();
+		Delta *= DamageMultiplier;
+	}
 	
 	const float OldHealth = Health;
 	Health += Delta;
 	Health = FMath::Clamp(Health, 0.f, HealthMax);
 
 	const float AppliedDelta = Health - OldHealth;
-	OnHealthChanged.Broadcast(nullptr, this, Health, AppliedDelta);
+	OnHealthChanged.Broadcast(InstigatorActor, this, Health, AppliedDelta);
+
+	// Died
+	if (AppliedDelta < 0.f && Health == 0.f)
+	{
+		ATGameModeBase* GM = GetWorld()->GetAuthGameMode<ATGameModeBase>();
+		if (GM)
+		{
+			GM->OnActorKilled(GetOwner(), InstigatorActor);
+		}
+	}
+}
+
+void UTAttributeComponent::ApplyHealthChangeOverTime(AActor* InstigatorActor, const float Delta, const float Duration, const int32 Ticks)
+{
+	if (!ensure(Duration >= 0.f))
+	{
+		return;
+	}
+	if (!ensureMsgf(Ticks > 0, TEXT("Health Change over time must have at least 1 tick")))
+	{
+		return;
+	}
 	
-	return true;
+	// TODO: Handle concurrent health change over time effects
+	if (GetWorld()->GetTimerManager().IsTimerActive(HealthChangeTimerHandle))
+	{
+		return;
+	}
+
+	HealthChangeTicksLeft = Ticks;
+	const float TickDelta = Delta / static_cast<float>(Ticks);
+	const float TickDuration = Duration / static_cast<float>(Ticks);
+	
+	HealthChangeOverTime_Tick(InstigatorActor, TickDelta, TickDuration);
+}
+
+void UTAttributeComponent::StopHealthChangeOverTime()
+{
+	GetWorld()->GetTimerManager().ClearTimer(HealthChangeTimerHandle);
 }
 
 bool UTAttributeComponent::IsAlive() const
 {
 	return Health > 0.f;
+}
+
+void UTAttributeComponent::Kill(AActor* InstigatorActor)
+{
+	ApplyHealthChange(InstigatorActor, -GetHealth());
+}
+
+void UTAttributeComponent::HealthChangeOverTime_Tick(AActor* InstigatorActor, const float Delta, const float Duration)
+{
+	if (HealthChangeTicksLeft <= 0)
+	{
+		return;
+	}
+	
+	ApplyHealthChange(InstigatorActor, Delta);
+	HealthChangeTicksLeft--;
+	
+	FTimerDelegate TimerDel;
+	TimerDel.BindLambda([=]() { HealthChangeOverTime_Tick(InstigatorActor, Delta, Duration); });
+	GetWorld()->GetTimerManager().SetTimer(HealthChangeTimerHandle, TimerDel, Duration, false);
+}
+
+UTAttributeComponent* UTAttributeComponent::GetAttributes(const AActor* FromActor)
+{
+	if (FromActor)
+	{
+		return Cast<UTAttributeComponent>(FromActor->GetComponentByClass(UTAttributeComponent::StaticClass()));
+	}
+	
+	return nullptr;
+}
+
+bool UTAttributeComponent::IsActorAlive(const AActor* Actor)
+{
+	const UTAttributeComponent* AttributeComponent = GetAttributes(Actor);
+	if (AttributeComponent)
+	{
+		return AttributeComponent->IsAlive();
+	}
+	return false;
 }
 

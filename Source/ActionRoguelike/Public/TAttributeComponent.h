@@ -17,9 +17,42 @@ public:
 	// Sets default values for this component's properties
 	UTAttributeComponent();
 
-	float GetHealth() { return Health; }
-	float GetHealthMax() { return HealthMax; }
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	static UTAttributeComponent* GetAttributes(const AActor* FromActor);
 
+	// Checks if the actor is alive. If the actor does not have an attribute component or is null, this returns false.
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	static bool IsActorAlive(const AActor* Actor);
+	
+	UFUNCTION(BlueprintCallable)
+	void ApplyHealthChange(AActor* InstigatorActor, float Delta);
+
+	// Apply a health change over the given duration, split up evenly over the specified number of ticks
+	UFUNCTION(BlueprintCallable)
+	void ApplyHealthChangeOverTime(AActor* InstigatorActor, const float Delta, const float Duration, const int32 Ticks);
+
+	// Immediately stop any ongoing health change over time
+	UFUNCTION(BlueprintCallable)
+	void StopHealthChangeOverTime();
+
+	UFUNCTION(BlueprintCallable)
+	bool IsAlive() const;
+
+	UFUNCTION(BlueprintCallable)
+	void Kill(AActor* InstigatorActor);
+	
+	float GetHealth() const { return Health; }
+	float GetHealthMax() const { return HealthMax; }
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnHealthChanged OnHealthChanged;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cheats")
+	bool bCheat_TakeNoDamage;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cheats")
+	bool bCheat_TakeAlmostNoDamage;
+	
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
@@ -28,22 +61,11 @@ protected:
 	// Health Max, Stamina, Strength
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	float HealthMax;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cheats")
-	bool bCheat_TakeNoDamage;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Cheats")
-	bool bCheat_TakeAlmostNoDamage;
-	
-public:	
 
-	UFUNCTION(BlueprintCallable)
-	bool ApplyHealthChange(float Delta);
+private:
+	void HealthChangeOverTime_Tick(AActor* InstigatorActor, const float Delta, const float Duration);
 
-	UFUNCTION(BlueprintCallable)
-	bool IsAlive() const;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnHealthChanged OnHealthChanged;
-		
+	FTimerHandle HealthChangeTimerHandle;
+	int32 HealthChangeTicksLeft;
 };

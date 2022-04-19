@@ -30,13 +30,8 @@ ATExplosiveBarrel::ATExplosiveBarrel()
 
 	bCanExplode = true;
 	ExplosionRetriggerDelaySeconds = 1.f;
-}
-
-// Called when the game starts or when spawned
-void ATExplosiveBarrel::BeginPlay()
-{
-	Super::BeginPlay();
 	
+	ExplosionDamage = -50.f;
 }
 
 void ATExplosiveBarrel::Explode()
@@ -54,13 +49,12 @@ void ATExplosiveBarrel::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UP
 		Explode();
 
 		// TODO: have the impulse apply the damage instead
-		ATCharacter* TCharacter = Cast<ATCharacter>(Other);
+		const ATCharacter* TCharacter = Cast<ATCharacter>(Other);
 		if (TCharacter)
 		{
-			UTAttributeComponent* AttributeComp =Cast<UTAttributeComponent>(
-				TCharacter->GetComponentByClass(UTAttributeComponent::StaticClass()));
+			UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(TCharacter);
 
-			AttributeComp->ApplyHealthChange(-50.f); // TODO: make member variable
+			AttributeComp->ApplyHealthChange(this, ExplosionDamage);
 		}
 
 		bCanExplode = false;
@@ -68,12 +62,6 @@ void ATExplosiveBarrel::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UP
 			ExplosionDelayTimerHandle, this, &ATExplosiveBarrel::EnableExplode, ExplosionRetriggerDelaySeconds, false);
 		
 	}
-}
-
-// Called every frame
-void ATExplosiveBarrel::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void ATExplosiveBarrel::EnableExplode()

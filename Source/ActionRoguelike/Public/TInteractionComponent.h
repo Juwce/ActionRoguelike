@@ -20,9 +20,6 @@ public:
 	UTInteractionComponent();
 
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
 	UFUNCTION(BlueprintCallable)
 	bool ComputeInteractCandidates(TArray<FHitResult>& Hits);
 	

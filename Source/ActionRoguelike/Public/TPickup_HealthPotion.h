@@ -15,12 +15,13 @@ public:
 	// Sets default values for this actor's properties
 	ATPickup_HealthPotion();
 
-	UFUNCTION()
-	bool HealPawn(const APawn* Pawn) const;
-
-	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
-
 protected:
+	virtual bool CanPickup(const APawn* InstigatorPawn) override;
+
+	virtual void DoPickup(APawn* InstigatorPawn) override;
+	
+	void HealPawn(const APawn* Pawn);
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float HealthGiven;
 

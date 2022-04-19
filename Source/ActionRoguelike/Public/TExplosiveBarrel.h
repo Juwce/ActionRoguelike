@@ -18,9 +18,6 @@ public:
 	ATExplosiveBarrel();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 	virtual void NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
 
 	UFUNCTION(BlueprintCallable)
@@ -29,12 +26,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float ExplosionRetriggerDelaySeconds;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float ExplosionDamage;
+	
 	ERadialImpulseFalloff ImpulseFalloff;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* StaticMeshComp;
 

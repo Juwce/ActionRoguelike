@@ -5,6 +5,7 @@
 
 #include "AIController.h"
 #include "TAttributeComponent.h"
+#include "BehaviorTree/Tasks/BTTask_FinishWithResult.h"
 
 EBTNodeResult::Type UTBTTask_HealSelf::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -13,44 +14,47 @@ EBTNodeResult::Type UTBTTask_HealSelf::ExecuteTask(UBehaviorTreeComponent& Owner
 
 EBTNodeResult::Type UTBTTask_HealSelf::PerformHealSelf(UBehaviorTreeComponent& OwnerComp)
 {
-	if (!OwnerAttributeComp)
+	UTAttributeComponent* OwnerAttributeComp = GetOwnerAttributeComp(OwnerComp);
+	if (!ensureMsgf(OwnerAttributeComp,
+				    TEXT("Owning pawn must have an Attribute Component to be able to heal. Please add one.")))
 	{
-		const bool Success = FindAndSetOwnerAttributeComp(OwnerComp);
-		if (!Success)
-		{
-			return EBTNodeResult::Failed;
-		}
+		return EBTNodeResult::Failed;
+	}
+	
+	float TotalPointsToHeal;
+	if (HealValueType == EHealingType::HealthPoints)
+	{
+		TotalPointsToHeal = HealValue;
+	}
+	else if (HealValueType == EHealingType::PercentOfHealthMax)
+	{
+		TotalPointsToHeal = HealValue * OwnerAttributeComp->GetHealthMax();
+	}
+	else
+	{
+		ensureMsgf(false, TEXT("Selected healing type not implemented! Ask a developer to add support."));
+		return EBTNodeResult::Failed;
 	}
 
-	const float HealAmount = OwnerAttributeComp->GetHealthMax() - OwnerAttributeComp->GetHealth();
-	OwnerAttributeComp->ApplyHealthChange(HealAmount);
-
+	OwnerAttributeComp->ApplyHealthChangeOverTime(OwnerAttributeComp->GetOwner(), TotalPointsToHeal, HealDuration, HealTicks);
 	return EBTNodeResult::Succeeded;
 }
 
-bool UTBTTask_HealSelf::FindAndSetOwnerAttributeComp(UBehaviorTreeComponent& OwnerComp)
+UTAttributeComponent* UTBTTask_HealSelf::GetOwnerAttributeComp(UBehaviorTreeComponent& OwnerComp) const
 {
 	const AAIController* MyController = OwnerComp.GetAIOwner();
 	if (!ensure(MyController))
 	{
-		return false;
+		return nullptr;
 	}
 
 	const APawn* MyPawn = Cast<APawn>(MyController->GetPawn());
 	if (!ensure(MyPawn))
 	{
-		return false;
+		return nullptr;
 	}
 
-	UTAttributeComponent* AttributeComp =
-		Cast<UTAttributeComponent>(MyPawn->GetComponentByClass(UTAttributeComponent::StaticClass()));
+	UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(MyPawn);
 
-	if (!ensureMsgf(AttributeComp,
-				    TEXT("Owning pawn must have an Attribute Component to be able to heal. Please add one.")))
-	{
-		return false;
-	}
-
-	OwnerAttributeComp = AttributeComp;
-	return true;
+	return AttributeComp;
 }

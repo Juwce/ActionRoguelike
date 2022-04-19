@@ -207,6 +207,23 @@ void ATCharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent*
 	}
 }
 
+void ATCharacter::CheatHealSelf(float Amount)
+{
+	AttributeComp->ApplyHealthChange(this, Amount);
+}
+
+void ATCharacter::CheatInvincible(bool Value)
+{
+	AttributeComp->bCheat_TakeNoDamage = Value;
+	AttributeComp->bCheat_TakeAlmostNoDamage = false;
+}
+
+void ATCharacter::CheatInvincibleAlmost(bool Value)
+{
+	AttributeComp->bCheat_TakeAlmostNoDamage = Value;
+	AttributeComp->bCheat_TakeNoDamage = false;
+}
+
 void ATCharacter::DrawDebugArrows() const
 {
 	const float DrawScale = 100.f;

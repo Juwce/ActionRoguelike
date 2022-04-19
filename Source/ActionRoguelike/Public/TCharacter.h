@@ -132,6 +132,18 @@ protected:
 	// Name of the hand socket on the character's skeletal mesh that various effects are spawned at the location of
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects")
 	FName HandSocketName;
+
+	/*
+	 * Console Commands / Cheats
+	 */
+	UFUNCTION(Exec)
+	void CheatHealSelf(float Amount = 100);
+
+	UFUNCTION(Exec)
+	void CheatInvincible(bool Value = true);
+
+	UFUNCTION(Exec)
+	void CheatInvincibleAlmost(bool Value = true);
 	
 private:
 	void DrawDebugArrows() const;

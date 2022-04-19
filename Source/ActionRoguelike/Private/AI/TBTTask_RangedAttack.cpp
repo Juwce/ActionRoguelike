@@ -4,8 +4,14 @@
 #include "AI/TBTTask_RangedAttack.h"
 
 #include "AIController.h"
+#include "TAttributeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/Character.h"
+
+UTBTTask_RangedAttack::UTBTTask_RangedAttack()
+{
+	MaxBulletSpreadDegrees = 2.f;
+}
 
 EBTNodeResult::Type UTBTTask_RangedAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -20,24 +26,33 @@ EBTNodeResult::Type UTBTTask_RangedAttack::PerformRangedAttack(UBehaviorTreeComp
 		return EBTNodeResult::Failed;
 	}
 
-	const ACharacter* MyCharacter = Cast<ACharacter>(MyController->GetPawn());
+	ACharacter* MyCharacter = Cast<ACharacter>(MyController->GetPawn());
 	if (!MyCharacter)
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	const FVector MuzzleLocation = MyCharacter->GetMesh()->GetSocketLocation("Muzzle_01");
 	const AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor"));
 	if (!TargetActor)
 	{
 		return EBTNodeResult::Failed;
 	}
 
+	if (!UTAttributeComponent::IsActorAlive(TargetActor))
+	{
+		return EBTNodeResult::Failed;
+	}
+
+	const FVector MuzzleLocation = MyCharacter->GetMesh()->GetSocketLocation("Muzzle_01");
 	const FVector Direction = TargetActor->GetActorLocation() - MuzzleLocation;
-	const FRotator MuzzleRotation = Direction.Rotation();
+	FRotator MuzzleRotation = Direction.Rotation();
+
+	MuzzleRotation.Pitch += FMath::RandRange(0.f, MaxBulletSpreadDegrees);
+	MuzzleRotation.Yaw += FMath::RandRange(-MaxBulletSpreadDegrees, MaxBulletSpreadDegrees);
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Instigator = MyCharacter;
 	const AActor* NewProjectile = GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
 
 	return NewProjectile ? EBTNodeResult::Succeeded : EBTNodeResult::Failed;

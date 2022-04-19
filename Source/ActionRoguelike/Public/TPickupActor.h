@@ -19,14 +19,19 @@ public:
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 
 protected:
+	virtual bool CanPickup(const APawn* InstigatorPawn);
 
-	UFUNCTION(BlueprintCallable)
-	void Activate();
+	virtual void DoPickup(APawn* InstigatorPawn);
 
 	UFUNCTION(BlueprintCallable)
 	void DeactivateAndCooldown();
+	
+	UFUNCTION(BlueprintCallable)
+	void Activate();
 
-	void PlayInteractSound();
+	void PlayInteractSound() const;
+
+	void ApplyInteractionCredits(APawn* InstigatorPawn);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMesh;
@@ -37,6 +42,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Interaction")
 	float CooldownDuration;
 
+	// Cost in credits required to interact with this pickup
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Credits")
+	int32 InteractionCreditCost;
+
+	// Reward in credits given when this pickup is successfully interacted with
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Credits")
+	int32 InteractionCreditReward;
+
+private:
 	FTimerHandle CooldownTimerHandle;
 
 };

@@ -13,28 +13,29 @@ ATPickup_HealthPotion::ATPickup_HealthPotion()
 	HealthGiven = 75.f;
 }
 
-bool ATPickup_HealthPotion::HealPawn(const APawn* Pawn) const
+bool ATPickup_HealthPotion::CanPickup(const APawn* InstigatorPawn)
 {
-	if (!ensureMsgf(Pawn, TEXT("Instigator pawn is null! Instigator should always be set when interacting.")))
+	if (Super::CanPickup(InstigatorPawn))
 	{
-		return false;
+		// Only heal if not at max health
+		const UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(InstigatorPawn);
+		return AttributeComp && AttributeComp->GetHealth() < AttributeComp->GetHealthMax();
 	}
-
-	UTAttributeComponent* AttributeComp = Cast<UTAttributeComponent>(Pawn->GetComponentByClass(UTAttributeComponent::StaticClass()));
-	if (AttributeComp && AttributeComp->GetHealth() < AttributeComp->GetHealthMax())
-	{
-		 AttributeComp->ApplyHealthChange(HealthGiven);
-		 return true;
-	}
+	
 	return false;
 }
 
-void ATPickup_HealthPotion::Interact_Implementation(APawn* InstigatorPawn)
+void ATPickup_HealthPotion::DoPickup(APawn* InstigatorPawn)
 {
-	const bool HealSuccessful = HealPawn(InstigatorPawn);
-	if (HealSuccessful)
+	Super::DoPickup(InstigatorPawn);
+	HealPawn(InstigatorPawn);
+}
+
+void ATPickup_HealthPotion::HealPawn(const APawn* Pawn)
+{
+	UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(Pawn);
+	if (AttributeComp)
 	{
-		 PlayInteractSound();
-		 DeactivateAndCooldown();
+		 AttributeComp->ApplyHealthChange(this, HealthGiven);
 	}
 }

@@ -39,8 +39,7 @@ void UTBTService_CheckHealth::UpdateHealthLowKey(UBehaviorTreeComponent& OwnerCo
 		return;
 	}
 
-	UTAttributeComponent* AttributeComp =
-		Cast<UTAttributeComponent>(OwningPawn->GetComponentByClass(UTAttributeComponent::StaticClass()));
+	const UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(OwningPawn);
 	if (!ensureMsgf(AttributeComp,
 					TEXT("Owning pawn must have a TAttributeComponent for this service to work. Please add one")))
 	{

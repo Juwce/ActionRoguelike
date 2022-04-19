@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HealingType.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "TBTTask_HealSelf.generated.h"
 
 class UTAttributeComponent;
+
 /**
  * 
  */
@@ -21,20 +23,21 @@ protected:
 	
 	EBTNodeResult::Type PerformHealSelf(UBehaviorTreeComponent& OwnerComp);
 
-	bool FindAndSetOwnerAttributeComp(UBehaviorTreeComponent& OwnerComp);
+	UTAttributeComponent* GetOwnerAttributeComp(UBehaviorTreeComponent& OwnerComp) const;
+
+	// How the heal value should be interpreted (percent of HealthMax, number of health points, etc.)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
+	EHealingType HealValueType;
+
+	// Amount to heal by: HealValueType determines how this value is interpreted (e.g. whether this value is a percent of HealthMax or number of health points to heal by)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
+	float HealValue;
 	
-	UPROPERTY()
-	UTAttributeComponent* OwnerAttributeComp = nullptr;
+	// How long it takes to heal the full amount (0 to instantly heal)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities", meta=(ClampMin = "0.0"))
+	float HealDuration;
 	
-	// // Total amount to heal by
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
-	// float HealAmount;
-	//
-	// // How long it takes to heal the full amount (0 for instant healing)
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
-	// float HealDuration;
-	//
-	// // The number of times per second to apply healing
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
-	// float HealTickRate;
+	// Total number of ticks that healing is split up by, evenly, over the heal duration
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities", meta=(ClampMin = "1"))
+	int32 HealTicks;
 };

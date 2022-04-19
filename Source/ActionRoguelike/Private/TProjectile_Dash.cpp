@@ -64,11 +64,3 @@ void ATProjectile_Dash::TeleportInstigator()
 	
 	Destroy();
 }
-
-// Called every frame
-void ATProjectile_Dash::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-

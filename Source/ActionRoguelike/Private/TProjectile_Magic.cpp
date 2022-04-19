@@ -4,6 +4,7 @@
 #include "TProjectile_Magic.h"
 
 #include "TAttributeComponent.h"
+#include "TGameplayFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -13,6 +14,7 @@ ATProjectile_Magic::ATProjectile_Magic()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	Damage = -20.f;
+	bEnsureInstigator = true;
 }
 
 // Called when the game starts or when spawned
@@ -43,23 +45,13 @@ void ATProjectile_Magic::Explode_Implementation()
 void ATProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor != GetInstigator())
+	APawn* InstigatorPawn = GetInstigator();
+	if (OtherActor && OtherActor != InstigatorPawn && UTAttributeComponent::GetAttributes(OtherActor))
 	{
-		UTAttributeComponent* AttributeComp = Cast<UTAttributeComponent>(
-			OtherActor->GetComponentByClass(UTAttributeComponent::StaticClass())
-		);
-		if (AttributeComp)
+		if (UTGameplayFunctionLibrary::ApplyDirectionalDamage(
+			InstigatorPawn, OtherActor, Damage, SweepResult))
 		{
-			AttributeComp->ApplyHealthChange(Damage);
 			Explode();
 		}
 	}
 }
-
-// Called every frame
-void ATProjectile_Magic::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
