@@ -5,8 +5,10 @@
 
 #include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
+#include "NavigationSystem.h"
 #include "TAttributeComponent.h"
 #include "TCharacter.h"
+#include "TPickupActor.h"
 #include "TPlayerController.h"
 #include "TPlayerState.h"
 #include "AI/TAICharacter.h"
@@ -23,6 +25,7 @@ ATGameModeBase::ATGameModeBase()
 	PlayerRespawnDelay = 2.f;
 
 	PlayerStateClass = ATPlayerState::StaticClass();
+	MinDistanceBetweenPickups = 10.f;
 }
 
 void ATGameModeBase::StartPlay()
@@ -33,6 +36,8 @@ void ATGameModeBase::StartPlay()
 	// Actual amount of bots and whether it's allowed to spawn determined by spawn log later in the chain...
 	GetWorldTimerManager().SetTimer(
 		TimerHandle_SpawnBot, this, &ATGameModeBase::TrySpawnBot, SpawnBotIntervalSeconds, true);
+
+	SpawnPickups();
 }
 
 void ATGameModeBase::CheatKillAllBots()
@@ -77,6 +82,63 @@ void ATGameModeBase::OnActorKilled(AActor* VictimActor, AActor* InstigatorActor)
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(InstigatorActor));
+}
+
+void ATGameModeBase::SpawnPickups()
+{
+	FVector VolumeOrigin;
+	FVector VolumeExtent;
+	const FVector NavQueryExtent = FVector(0.f, 0.f, 1024.f);
+	PickupSpawnVolume->GetActorBounds(false, VolumeOrigin, VolumeExtent);
+
+	// Break bounding box up into grid, with each cell MinDistanceBetweenPickups in length
+	const int32 CellCountX = FMath::RoundToInt(VolumeExtent.X / MinDistanceBetweenPickups);
+	const int32 CellCountY = FMath::RoundToInt(VolumeExtent.Y / MinDistanceBetweenPickups);
+	TArray<FTGridCell> Cells;
+	for (int32 x = 0; x < CellCountX; x++)
+	{
+		for (int32 y = 0; y < CellCountY; y++)
+		{
+			Cells.Add(FTGridCell(x,y));
+		}
+	}
+	
+	for (const FTPickupSpawnInfo PickupSpawnInfo : PickupActors)
+	{
+		const FColor DebugColor = FColor::MakeRandomColor();
+		for (int i = 0; i < PickupSpawnInfo.NumberToSpawn; i++)
+		{
+			// Pick a random cell
+			const int32 RandIndex = FMath::RandRange(0, Cells.Num() - 1);
+			const FTGridCell Cell = Cells[RandIndex];
+			Cells.RemoveAt(RandIndex);
+
+			// Get that cell's world position
+			const FVector GridTopLeft = FVector(VolumeOrigin.X - (VolumeExtent.X / 2.f),
+												VolumeOrigin.Y - (VolumeExtent.Y / 2.f),
+												VolumeOrigin.Z);
+			const float CellLength = VolumeExtent.X / CellCountX;
+			const FVector CellRelativePosition = FVector(CellLength * Cell.X, CellLength * Cell.Y, 0.f);
+			const FVector CellWorldLocation = GridTopLeft + CellRelativePosition;
+
+			DrawDebugSphere(GetWorld(), CellWorldLocation, 20.f, 12.f,
+				FColor(DebugColor.R/3.f,DebugColor.G/3.f,DebugColor.B/3.f), false, 5.f);
+
+			// TODO: Project the cell's position to the navigation system
+			// TODO: Use NavigationTypes::FNavigationProjectionWork and the workload logic from FEQSHelpers::RunNavProjection()
+			// TODO: Consider just using EQS to handle all of this
+			// UNavigationSystemV1* NavSys = Cast<UNavigationSystemV1>(GetWorld()->GetNavigationSystem());
+			// if (ensure(NavSys))
+			// {
+			// 	const FVector QueryExtent = FVector(0.f, 0.f, 1024.f);
+			// 	FNavLocation OutNavLocation;
+			// 	bool bResult = NavSys->ProjectPointToNavigation(CellWorldLocation, OutNavLocation, QueryExtent);
+			// 	FVector ProjectedLocation = OutNavLocation.Location;
+			// 	DrawDebugSphere(GetWorld(), ProjectedLocation, 20.f, 12.f, DebugColor, false, 5.f);
+			//	GetWorld()->SpawnActor(PSpawnInfo.PickupClass);
+			// }
+		}
+	}
 }
 
 /*
