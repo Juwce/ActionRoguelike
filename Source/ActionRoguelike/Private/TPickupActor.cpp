@@ -16,7 +16,7 @@ ATPickupActor::ATPickupActor()
 
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>("StaticMesh");
 	SetRootComponent(StaticMesh);
-	StaticMesh->SetCollisionProfileName("ECC_WorldDynamic");
+	StaticMesh->SetCollisionProfileName("OverlapAllDynamic");
 
 	CooldownDuration = 10.f;
 }

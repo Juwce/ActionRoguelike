@@ -19,32 +19,11 @@ struct FTPickupSpawnInfo
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<ATPickupActor> PickupClass;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 NumberToSpawn;
-};
-
-USTRUCT()
-struct FTGridCell
-{
-	GENERATED_BODY()
-
-	FTGridCell()
-	{
-		X = 0;
-		Y = 0;
-	}
-	
-	FTGridCell(const int32 XValue, const int32 YValue)
-	{
-		X = XValue;
-		Y = YValue;
-	}
-	
-	int32 X;
-	int32 Y;
 };
 
 UCLASS()
@@ -82,6 +61,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Pickups")
 	float MinDistanceBetweenPickups;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pickups")
+	float ZOffsetFromGround;
 
 	// Specify pickup classes to spawn, and how many of them
 	UPROPERTY(EditDefaultsOnly, Category = "Pickups")

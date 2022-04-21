@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HealingType.h"
+#include "THealingType.h"
 #include "BehaviorTree/BTTaskNode.h"
 #include "TBTTask_HealSelf.generated.h"
 
