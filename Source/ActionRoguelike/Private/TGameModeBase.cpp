@@ -10,6 +10,7 @@
 #include "TAttributeComponent.h"
 #include "TCharacter.h"
 #include "TPickupActor.h"
+#include "TPickupSpawnVolume.h"
 #include "TPlayerController.h"
 #include "TPlayerState.h"
 #include "AI/TAICharacter.h"
@@ -26,7 +27,6 @@ ATGameModeBase::ATGameModeBase()
 	PlayerRespawnDelay = 2.f;
 
 	PlayerStateClass = ATPlayerState::StaticClass();
-	MinDistanceBetweenPickups = 10.f;
 }
 
 void ATGameModeBase::StartPlay()
@@ -85,43 +85,11 @@ void ATGameModeBase::OnActorKilled(AActor* VictimActor, AActor* InstigatorActor)
 	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(InstigatorActor));
 }
 
-
 void ATGameModeBase::SpawnPickups()
 {
-	FVector VolumeOrigin;
-	FVector VolumeExtent;
-	PickupSpawnVolume->GetActorBounds(false, VolumeOrigin, VolumeExtent);
-
-	TArray<FVector> GridPoints;
-	const int32 CellCountX = FMath::Floor(VolumeExtent.X * 2 / MinDistanceBetweenPickups);
-	const int32 CellCountY = FMath::Floor(VolumeExtent.Y * 2 / MinDistanceBetweenPickups);
-	TActorSpawnHelpers::BreakVolumeIntoPointGrid(VolumeOrigin, VolumeExtent, CellCountX, CellCountY, GridPoints);
-
-	TArray<FVector> SpawnPoints;
-	TActorSpawnHelpers::ProjectPointsToNav(GetWorld(), GridPoints, SpawnPoints);
-	
-	UE_LOG(LogTemp, Warning, TEXT("GameMode SpawnPickups: %d / %d spawn points found."), SpawnPoints.Num(), GridPoints.Num());
-
-	for (const FTPickupSpawnInfo& PickupSpawnInfo : PickupActors)
+	for (TActorIterator<ATPickupSpawnVolume> Iter(GetWorld()); Iter; ++Iter)
 	{
-		for (int i = 0; i < PickupSpawnInfo.NumberToSpawn; i++)
-		{
-			if (SpawnPoints.Num() == 0)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("GameMode: Ran out of spawn points for pickups."))
-				break;
-			}
-			
-			const int32 RandIndex = FMath::RandRange(0, SpawnPoints.Num() - 1);
-			const FVector SpawnPoint = SpawnPoints[RandIndex] + FVector(0.f, 0.f, ZOffsetFromGround);
-			SpawnPoints.RemoveAt(RandIndex);
-
-			DrawDebugSphere(GetWorld(), SpawnPoint, 20.f, 12.f, FColor::Green, false, 5.f);
-			GetWorld()->SpawnActor<AActor>(
-				PickupSpawnInfo.PickupClass,
-				SpawnPoint,
-				FRotator(0.f, FMath::RandRange(0.f, 360.f), 0.f));
-		}
+		(*Iter)->SpawnPickups();
 	}
 }
 

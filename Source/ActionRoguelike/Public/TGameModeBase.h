@@ -14,17 +14,6 @@ class UEnvQuery;
  * 
  */
 
-USTRUCT(BlueprintType)
-struct FTPickupSpawnInfo
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<ATPickupActor> PickupClass;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	int32 NumberToSpawn;
-};
 
 UCLASS()
 class ACTIONROGUELIKE_API ATGameModeBase : public AGameModeBase
@@ -45,29 +34,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Game Credits")
 	int32 BotKillCreditDelta;
 
-	/*
-	 * Pickup Spawning
-	 */
-protected:
 	UFUNCTION(Exec)
 	void SpawnPickups();
-
-	// TODO: This is a bad implementation as it requires a specific instance of an actor that may not be
-	// TODO: set on every level. Change to pick a spawn volume class, search the world for all volumes, and trigger
-	// TODO: spawn logic accordingly. Spawn logic should probably be located in that class anyways and not in game mode.
-	// Volume in which to spawn the pickup
-	UPROPERTY(EditDefaultsOnly, Category = "Pickups")
-	TSoftObjectPtr<AActor> PickupSpawnVolume;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Pickups")
-	float MinDistanceBetweenPickups;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Pickups")
-	float ZOffsetFromGround;
-
-	// Specify pickup classes to spawn, and how many of them
-	UPROPERTY(EditDefaultsOnly, Category = "Pickups")
-	TArray<FTPickupSpawnInfo> PickupActors;
 	
 	/*
 	 * Player Spawning
