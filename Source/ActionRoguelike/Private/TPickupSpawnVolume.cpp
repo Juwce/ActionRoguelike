@@ -18,7 +18,8 @@ ATPickupSpawnVolume::ATPickupSpawnVolume()
 	MinDistanceBetweenPickups = 100.f;
 	ZOffsetFromGround = 50.f;
 
-	bDebugDrawSpawnPoints = false;
+	bDebugDrawSpawnCandidates = false;
+	bDebugDrawSampleSpawnPoints = false;
 	
 	#if WITH_EDITOR
 	// TODO: this currently works in the editor, but since these bindings are being done in the constructor, I need to
@@ -40,20 +41,28 @@ void ATPickupSpawnVolume::DebugDrawSpawnPoints()
 {
 	FlushPersistentDebugLines(GetWorld());
 
-	if (bDebugDrawSpawnPoints)
+	if (bDebugDrawSpawnCandidates || bDebugDrawSampleSpawnPoints)
 	{
 		ComputeCandidateSpawnPoints();
 		SelectSpawnPointsFromCandidates();
-		for (const auto& Point : CandidateSpawnPoints)
+		
+		if (bDebugDrawSpawnCandidates)
 		{
-			DrawDebugSphere(GetWorld(), Point, 24.f, 12.f, FColor::Green, true);
-		}
-				
-		for (const auto& PickupSpawnInfo : PickupActors)
-		{
-			for (auto& Point : PickupSpawnInfo.SpawnPoints)
+			for (const auto& Point : CandidateSpawnPoints)
 			{
-				DrawDebugSphere(GetWorld(), Point, 32.f, 12.f, FColor::Blue, true);
+				DrawDebugSphere(GetWorld(), Point, 24.f, 6.f, FColor::Green, true);
+			}
+		}
+
+		if (bDebugDrawSampleSpawnPoints)
+		{
+			for (const auto& PickupSpawnInfo : PickupActors)
+			{
+				FColor PickupColor = FColor::MakeRandomColor();
+				for (auto& Point : PickupSpawnInfo.SpawnPoints)
+				{
+					DrawDebugSphere(GetWorld(), Point, 32.f, 12.f, PickupColor, true);
+				}
 			}
 		}
 	}
@@ -130,14 +139,12 @@ void ATPickupSpawnVolume::PostEditMove(bool bFinished)
 
 	if (bFinished /* && SelectedInEditor */)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("DEBUG MOVED %s"), *GetNameSafe(this));
 		DebugDrawSpawnPoints();
 	}
 }
 
 void ATPickupSpawnVolume::OnSelectionChanged(UObject* NewSelection)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Selection Changed!"));
 	TArray<ATPickupSpawnVolume*> SelectedVolumes;
 	ATPickupSpawnVolume* SelectedVolume = Cast<ATPickupSpawnVolume>(NewSelection);
 	if (SelectedVolume)
@@ -157,7 +164,6 @@ void ATPickupSpawnVolume::OnSelectionChanged(UObject* NewSelection)
 	{
 		if (SpawnVolume == this && !SelectedInEditor)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Selected for the first time! %s"), *GetNameSafe(SpawnVolume));
 			DebugDrawSpawnPoints();
 			SelectedInEditor = true;
 		}
@@ -165,9 +171,34 @@ void ATPickupSpawnVolume::OnSelectionChanged(UObject* NewSelection)
 
 	if (SelectedInEditor && !IsSelected())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Deselected! %s"), *GetNameSafe(this));
 		FlushPersistentDebugLines(GetWorld());
 		SelectedInEditor = false;
+	}
+}
+
+void ATPickupSpawnVolume::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (PropertyChangedEvent.Property == nullptr)
+	{
+		return;
+	}
+	
+	const FName PropName = PropertyChangedEvent.GetPropertyName();
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *PropName.ToString());
+
+	if (PropName == GET_MEMBER_NAME_CHECKED(ATPickupSpawnVolume, bDebugDrawSpawnCandidates) ||
+		PropName == GET_MEMBER_NAME_CHECKED(ATPickupSpawnVolume, bDebugDrawSampleSpawnPoints))
+	{
+		if (bDebugDrawSpawnCandidates || bDebugDrawSampleSpawnPoints)
+		{
+			DebugDrawSpawnPoints();
+		}
+		else
+		{
+			FlushPersistentDebugLines(GetWorld());
+		}
 	}
 }
 #endif

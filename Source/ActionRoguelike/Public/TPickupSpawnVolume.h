@@ -58,9 +58,15 @@ protected:
 
 	UPROPERTY()
 	TArray<FVector> CandidateSpawnPoints;
-	
+
+	// Draw all possible spawn candidate locations (projected onto the navmesh). Warning: this may be performance
+	// intensive and lock up the editor if there are hundreds of potential spawn points
 	UPROPERTY(EditAnywhere, Category = "Editor Debugging")
-	bool bDebugDrawSpawnPoints;
+	bool bDebugDrawSpawnCandidates;
+
+	// Draw spawn points, randomly selected. Each Pickup Actor is assigned a random color.
+	UPROPERTY(EditAnywhere, Category = "Editor Debugging")
+	bool bDebugDrawSampleSpawnPoints;
 	
 private:
 	bool bSpawnPointsSelected;
@@ -69,6 +75,7 @@ private:
 public:
 	virtual void PostEditMove(bool bFinished) override;
 	void OnSelectionChanged(UObject* NewSelection);
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	
 private:
 	bool SelectedInEditor;
