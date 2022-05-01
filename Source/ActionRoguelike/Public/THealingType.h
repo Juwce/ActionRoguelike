@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HealingType.generated.h"
+#include "THealingType.generated.h"
 
 UENUM(BlueprintType)
 enum class EHealingType : uint8

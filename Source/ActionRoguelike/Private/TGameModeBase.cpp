@@ -5,8 +5,12 @@
 
 #include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
+#include "NavigationSystem.h"
+#include "TActorSpawnHelpers.h"
 #include "TAttributeComponent.h"
 #include "TCharacter.h"
+#include "TPickupActor.h"
+#include "TPickupSpawnVolume.h"
 #include "TPlayerController.h"
 #include "TPlayerState.h"
 #include "AI/TAICharacter.h"
@@ -33,6 +37,8 @@ void ATGameModeBase::StartPlay()
 	// Actual amount of bots and whether it's allowed to spawn determined by spawn log later in the chain...
 	GetWorldTimerManager().SetTimer(
 		TimerHandle_SpawnBot, this, &ATGameModeBase::TrySpawnBot, SpawnBotIntervalSeconds, true);
+
+	SpawnPickups();
 }
 
 void ATGameModeBase::CheatKillAllBots()
@@ -77,6 +83,14 @@ void ATGameModeBase::OnActorKilled(AActor* VictimActor, AActor* InstigatorActor)
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(InstigatorActor));
+}
+
+void ATGameModeBase::SpawnPickups()
+{
+	for (TActorIterator<ATPickupSpawnVolume> Iter(GetWorld()); Iter; ++Iter)
+	{
+		(*Iter)->SpawnPickups();
+	}
 }
 
 /*

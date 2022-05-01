@@ -13,6 +13,8 @@ class UEnvQuery;
 /**
  * 
  */
+
+
 UCLASS()
 class ACTIONROGUELIKE_API ATGameModeBase : public AGameModeBase
 {
@@ -28,8 +30,12 @@ public:
 	
 	void OnActorKilled(AActor* VictimActor, AActor* InstigatorActor);
 
+protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Game Credits")
 	int32 BotKillCreditDelta;
+
+	UFUNCTION(Exec)
+	void SpawnPickups();
 	
 	/*
 	 * Player Spawning
