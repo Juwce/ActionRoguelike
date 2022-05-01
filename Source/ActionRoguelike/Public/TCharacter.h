@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TActionComponent.h"
 #include "GameFramework/Character.h"
 #include "TCharacter.generated.h"
 
+class UTActionComponent;
 class ATProjectileBase;
 class UCameraComponent;
 class USpringArmComponent;
@@ -38,6 +40,8 @@ protected:
 	 */
 	void MoveForward(float Value);
 	void MoveRight(float Value);
+	void StartSprint();
+	void StopSprint();
 
 	/*
 	 * Interaction
@@ -96,6 +100,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UTAttributeComponent* AttributeComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	UTActionComponent* ActionComponent;
 	
 	/*
 	 * Hit Flash Effect
@@ -149,5 +156,7 @@ private:
 	void DrawDebugArrows() const;
 
 	FTimerHandle TimerHandle_Attack;
+
+	FName ACTION_NAME_SPRINT = "Sprint";
 
 };

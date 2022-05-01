@@ -35,6 +35,8 @@ ATCharacter::ATCharacter()
 
 	AttributeComp = CreateDefaultSubobject<UTAttributeComponent>("AttributeComp");
 
+	ActionComponent = CreateDefaultSubobject<UTActionComponent>("ActionComponent");
+
 	MaxAttackTraceDistance = 3000.f;
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -77,6 +79,8 @@ void ATCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("TertiaryAttack", IE_Pressed, this,  &ATCharacter::TertiaryAttack);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, InteractionComp, &UTInteractionComponent::PrimaryInteract);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this,  &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this,  &ATCharacter::StartSprint);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this,  &ATCharacter::StopSprint);
 }
 
 // Called when the game starts or when spawned
@@ -105,6 +109,22 @@ void ATCharacter::MoveRight(float Value)
 	FVector RightVector = FRotationMatrix(ControlRot).GetScaledAxis(EAxis::Y);
 	
 	AddMovementInput(RightVector, Value);
+}
+
+void ATCharacter::StartSprint()
+{
+	const bool bResult = ActionComponent->StartActionByName(ACTION_NAME_SPRINT);
+	ensureMsgf(bResult, TEXT("Sprint was attempted but the sprint action was not found! Ensure an action by the name"
+							 " \"%s\" has been added to the character's ActionComponent"),
+							 *ACTION_NAME_SPRINT.ToString());
+}
+
+void ATCharacter::StopSprint()
+{
+	const bool bResult = ActionComponent->StopActionByName(ACTION_NAME_SPRINT);
+	ensureMsgf(bResult, TEXT("StopSprint was attempted but the sprint action was not found! Ensure an action by the name"
+							 " \"%s\" has been added to the character's ActionComponent"),
+							 *ACTION_NAME_SPRINT.ToString());
 }
 
 void ATCharacter::PrimaryInteract()
