@@ -28,8 +28,12 @@ bool UTGameplayFunctionLibrary::ApplyDirectionalDamage(AActor* DamageCauser, AAc
 	UPrimitiveComponent* HitComp = HitResult.GetComponent();
 	if (HitComp && HitComp->IsSimulatingPhysics(HitResult.BoneName))
 	{
+		// Direction = Target - Origin
+		FVector Direction = HitResult.TraceEnd - HitResult.TraceStart;
+		Direction.Normalize();
+		
 		HitComp->AddImpulseAtLocation(
-			-HitResult.ImpactNormal * ForceAmount, HitResult.ImpactPoint, HitResult.BoneName);
+			Direction * ForceAmount, HitResult.ImpactPoint, HitResult.BoneName);
 	}
 
 	return true;
