@@ -17,15 +17,21 @@ public:
 	// Sets default values for this component's properties
 	UTActionComponent();
 
-	UPROPERTY()
-	TArray<UTAction*> Actions;
+	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	void AddAction(const TSubclassOf<UTAction> ActionClass);
 
 	UFUNCTION(BlueprintCallable, Category = "Actions")
-	bool StartActionByName(const FName ActionName);
+	bool StartActionByName(AActor* Instigator, const FName ActionName);
 		
 	UFUNCTION(BlueprintCallable, Category = "Actions")
-	bool StopActionByName(const FName ActionName);
+	bool StopActionByName(AActor* Instigator, const FName ActionName);
+
+	// Default actions to add at BeginPlay()
+	UPROPERTY(EditDefaultsOnly, Category = "Actions")
+	TArray<TSubclassOf<UTAction>> DefaultActions;
+
+	UPROPERTY()
+	TArray<UTAction*> Actions;
 };

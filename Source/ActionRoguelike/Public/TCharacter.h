@@ -23,6 +23,8 @@ public:
 	// Sets default values for this character's properties
 	ATCharacter();
 
+	FName GetHandSocketName() const { return HandSocketName; }
+	
 protected:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -55,21 +57,26 @@ protected:
 	void SecondaryAttack();
 	void TertiaryAttack();
 
-	void Attack_StartTimer(const TSubclassOf<ATProjectileBase>& ProjectileClass);
-	void Attack_TimeElapsed(const TSubclassOf<ATProjectileBase>& ProjectileClass);
-
-	UFUNCTION(BlueprintCallable)
-	bool ComputeAttackTarget(FVector& TargetLocation);
-	
-	// Max distance away from the camera to trace for an attack target
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float MaxAttackTraceDistance;
-
 	/*
 	 * Attributes
 	 */
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth, float Delta);
+
+	/*
+	 * Actions
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Actions")
+	FName ActionName_Sprint;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Actions")
+	FName ActionName_PrimaryAttack;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Actions")
+	FName ActionName_SecondaryAttack;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Actions")
+	FName ActionName_TertiaryAttack;
 
 	/*
 	 * Components
@@ -82,9 +89,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UTInteractionComponent* InteractionComp;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UParticleSystem* SpellCastVFX;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | Attack")
 	UAnimMontage* AttackAnim;
@@ -156,7 +160,4 @@ private:
 	void DrawDebugArrows() const;
 
 	FTimerHandle TimerHandle_Attack;
-
-	FName ACTION_NAME_SPRINT = "Sprint";
-
 };

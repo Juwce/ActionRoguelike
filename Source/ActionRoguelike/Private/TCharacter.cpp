@@ -37,8 +37,6 @@ ATCharacter::ATCharacter()
 
 	ActionComponent = CreateDefaultSubobject<UTActionComponent>("ActionComponent");
 
-	MaxAttackTraceDistance = 3000.f;
-	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	
 	// Don't apply up/down rotation to the character when the camera rotates
@@ -48,6 +46,11 @@ ATCharacter::ATCharacter()
 	TimeToHitMaterialParamName = "TimeToHit";
 	HitFlashSpeedMaterialParamName = "HitFlashSpeed";
 	HitFlashColorMaterialParamName = "HitFlashColor";
+	
+	ActionName_Sprint = "Sprint";
+	ActionName_PrimaryAttack = "Attack_MagicProjectile";
+	ActionName_SecondaryAttack = "Attack_Dash";
+	ActionName_TertiaryAttack = "Attack_BlackHole";
 }
 
 // Called every frame
@@ -113,18 +116,12 @@ void ATCharacter::MoveRight(float Value)
 
 void ATCharacter::StartSprint()
 {
-	const bool bResult = ActionComponent->StartActionByName(ACTION_NAME_SPRINT);
-	ensureMsgf(bResult, TEXT("Sprint was attempted but the sprint action was not found! Ensure an action by the name"
-							 " \"%s\" has been added to the character's ActionComponent"),
-							 *ACTION_NAME_SPRINT.ToString());
+	ActionComponent->StartActionByName(this, ActionName_Sprint);
 }
 
 void ATCharacter::StopSprint()
 {
-	const bool bResult = ActionComponent->StopActionByName(ACTION_NAME_SPRINT);
-	ensureMsgf(bResult, TEXT("StopSprint was attempted but the sprint action was not found! Ensure an action by the name"
-							 " \"%s\" has been added to the character's ActionComponent"),
-							 *ACTION_NAME_SPRINT.ToString());
+	ActionComponent->StopActionByName(this, ActionName_Sprint);
 }
 
 void ATCharacter::PrimaryInteract()
@@ -137,71 +134,17 @@ void ATCharacter::PrimaryInteract()
 
 void ATCharacter::PrimaryAttack()
 {
-	Attack_StartTimer(PrimaryProjectileClass);
+	ActionComponent->StartActionByName(this, ActionName_PrimaryAttack);
 }
 
 void ATCharacter::SecondaryAttack()
 {
-	Attack_StartTimer(SecondaryProjectileClass);
+	ActionComponent->StartActionByName(this, ActionName_SecondaryAttack);
 }
 
 void ATCharacter::TertiaryAttack()
 {
-	Attack_StartTimer(TertiaryProjectileClass);
-}
-
-void ATCharacter::Attack_StartTimer(const TSubclassOf<ATProjectileBase>& ProjectileClass)
-{
-	PlayAnimMontage(AttackAnim);
-	
-	FTimerDelegate TimerDel;
-	TimerDel.BindLambda([&]() { Attack_TimeElapsed(ProjectileClass); });
-	GetWorldTimerManager().SetTimer(TimerHandle_Attack, TimerDel, 0.2f, false);
-}
-
-void ATCharacter::Attack_TimeElapsed(const TSubclassOf<ATProjectileBase>& ProjectileClass)
-{
-	if (ensure(ProjectileClass))
-	{
-		const FVector HandLocation = GetMesh()->GetSocketLocation(HandSocketName);
-
-		FVector Target;
-		ComputeAttackTarget(Target);
-
-		const FRotator LookAtRotation = FRotationMatrix::MakeFromX(Target - HandLocation).Rotator();
-		const FTransform SpawnTM = FTransform(LookAtRotation, HandLocation);
-
-		FActorSpawnParameters SpawnParams;
-		// ignore collision checks when spawning
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParams.Instigator = this;
-
-		GetWorld()->SpawnActor<ATProjectileBase>(ProjectileClass, SpawnTM, SpawnParams);
-		UGameplayStatics::SpawnEmitterAttached(SpellCastVFX, GetMesh(), HandSocketName);
-	}
-}
-
-// Target the first thing some distance in front of the camera. If we find nothing, target the max distance
-bool ATCharacter::ComputeAttackTarget(FVector& TargetLocation)
-{
-	const FVector CameraLocation = CameraComp->GetComponentLocation();
-	const FVector ControlRotation = GetControlRotation().Vector();
-	const FVector TraceEnd = CameraLocation + (ControlRotation * MaxAttackTraceDistance);
-	
-	FCollisionObjectQueryParams ObjectQueryParams;
-	ObjectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldDynamic);
-	ObjectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldStatic);
-	ObjectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Pawn);
-	
-	FCollisionQueryParams CollisionQueryParams;
-	CollisionQueryParams.AddIgnoredActor(this);
-	
-	FHitResult Hit;
-	bool bBlockingHit = GetWorld()->LineTraceSingleByObjectType(
-		Hit, CameraLocation, TraceEnd, ObjectQueryParams, CollisionQueryParams);
-
-	TargetLocation = bBlockingHit ? Hit.Location : TraceEnd;
-	return bBlockingHit;
+	ActionComponent->StartActionByName(this, ActionName_TertiaryAttack);
 }
 
 void ATCharacter::TriggerHitFlashEffect()
