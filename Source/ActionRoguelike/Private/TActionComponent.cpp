@@ -9,7 +9,8 @@ UTActionComponent::UTActionComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
+	// TODO: Toggle on/of with debug actor gameplay tags console flag
+	PrimaryComponentTick.bCanEverTick = true;
 }
 
 void UTActionComponent::BeginPlay()
@@ -20,6 +21,16 @@ void UTActionComponent::BeginPlay()
 	{
 		AddAction(ActionClass);
 	}
+}
+
+void UTActionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// TODO: Make toggleable with a debug actor gameplay tags console flag
+	const FString DebugMsg = GetNameSafe(GetOwner()) + " : " + ActiveGameplayTags.ToStringSimple();
+	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, DebugMsg);
 }
 
 void UTActionComponent::AddAction(const TSubclassOf<UTAction> ActionClass)

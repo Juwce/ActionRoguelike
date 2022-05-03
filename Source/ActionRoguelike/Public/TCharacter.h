@@ -93,15 +93,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | Attack")
 	UAnimMontage* AttackAnim;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | Attack")
-	TSubclassOf<ATProjectileBase> PrimaryProjectileClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | Attack")
-	TSubclassOf<ATProjectileBase> SecondaryProjectileClass;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat | Attack")
-	TSubclassOf<ATProjectileBase> TertiaryProjectileClass;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UTAttributeComponent* AttributeComp;
 

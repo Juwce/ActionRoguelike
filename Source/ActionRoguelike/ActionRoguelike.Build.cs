@@ -10,7 +10,8 @@ public class ActionRoguelike : ModuleRules
 	
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
-			"Core", "CoreUObject", "Engine", "InputCore", "AIModule", "GameplayTasks", "NavigationSystem"
+			"Core", "CoreUObject", "Engine", "InputCore", "AIModule",
+			"GameplayTasks", "NavigationSystem", "GameplayTags"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
