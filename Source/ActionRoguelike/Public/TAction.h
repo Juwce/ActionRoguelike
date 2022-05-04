@@ -17,6 +17,10 @@ class ACTIONROGUELIKE_API UTAction : public UObject
 	GENERATED_BODY()
 
 public:
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Action")
+	bool CanStart(AActor* InstigatorActor);
+	
 	UFUNCTION(BlueprintNativeEvent, Category = "Action")
 	void StartAction(AActor* InstigatorActor);
 
@@ -30,6 +34,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
 	FName ActionName;
 
+	UFUNCTION(BlueprintCallable)
+	bool IsRunning() const { return bIsRunning; }
+
 protected:
 
 	/* Tags added to owning actor when activated, removed when action stops or completes */
@@ -40,5 +47,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
 	FGameplayTagContainer BlockedTags;
 	
+	bool bIsRunning;
 	
 };

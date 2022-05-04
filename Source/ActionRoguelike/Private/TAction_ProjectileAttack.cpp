@@ -11,16 +11,21 @@
 UTAction_ProjectileAttack::UTAction_ProjectileAttack()
 {
 	MaxAttackTraceDistance = 3000.f;
+	AttackDelaySeconds = 0.2f;
 }
 
 void UTAction_ProjectileAttack::StartAction_Implementation(AActor* InstigatorActor)
 {
 	Super::StartAction_Implementation(InstigatorActor);
 
-	OwnerCharacter = Cast<ATCharacter>(InstigatorActor);
-	if (OwnerCharacter)
+	ATCharacter* InstigatorCharacter = Cast<ATCharacter>(InstigatorActor);
+	if (ensure(InstigatorCharacter))
 	{
-		StartAttackTimer();
+		StartAttackTimer(InstigatorCharacter);
+	}
+	else
+	{
+		StopAction(InstigatorActor);
 	}
 }
 
@@ -31,20 +36,23 @@ void UTAction_ProjectileAttack::StopAction_Implementation(AActor* InstigatorActo
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 }
 
-void UTAction_ProjectileAttack::StartAttackTimer()
+void UTAction_ProjectileAttack::StartAttackTimer(ATCharacter* InstigatorCharacter)
 {
-	OwnerCharacter->PlayAnimMontage(AttackAnim);
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UTAction_ProjectileAttack::ExecuteAttack, .2f);
+	InstigatorCharacter->PlayAnimMontage(AttackAnim);
+	
+	FTimerDelegate TimerDel;
+	TimerDel.BindLambda([=]() { ExecuteAttack(InstigatorCharacter); });
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, AttackDelaySeconds, false);
 }
 
-void UTAction_ProjectileAttack::ExecuteAttack() const
+void UTAction_ProjectileAttack::ExecuteAttack(ATCharacter* InstigatorCharacter)
 {
 	if (ensure(ProjectileClass))
 	{
-		const FVector HandLocation = OwnerCharacter->GetMesh()->GetSocketLocation(OwnerCharacter->GetHandSocketName()); 
+		const FVector HandLocation = InstigatorCharacter->GetMesh()->GetSocketLocation(InstigatorCharacter->GetHandSocketName()); 
 
 		FVector Target;
-		ComputeAttackTarget(Target);
+		ComputeAttackTarget(InstigatorCharacter, Target);
 
 		const FRotator LookAtRotation = FRotationMatrix::MakeFromX(Target - HandLocation).Rotator();
 		const FTransform SpawnTM = FTransform(LookAtRotation, HandLocation);
@@ -52,25 +60,27 @@ void UTAction_ProjectileAttack::ExecuteAttack() const
 		FActorSpawnParameters SpawnParams;
 		// ignore collision checks when spawning
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParams.Instigator = OwnerCharacter;
+		SpawnParams.Instigator = InstigatorCharacter;
 
 		GetWorld()->SpawnActor<ATProjectileBase>(ProjectileClass, SpawnTM, SpawnParams);
 		UGameplayStatics::SpawnEmitterAttached(
-			SpellCastVFX, OwnerCharacter->GetMesh(), OwnerCharacter->GetHandSocketName());
+			SpellCastVFX, InstigatorCharacter->GetMesh(), InstigatorCharacter->GetHandSocketName());
 	}
+
+	StopAction(InstigatorCharacter);
 }
 
-bool UTAction_ProjectileAttack::ComputeAttackTarget(FVector& TargetLocation) const
+bool UTAction_ProjectileAttack::ComputeAttackTarget(ATCharacter* InstigatorCharacter, FVector& TargetLocation) const
 {
 	const UCameraComponent* CameraComp = Cast<UCameraComponent>(
-				OwnerCharacter->GetComponentByClass(UCameraComponent::StaticClass()));
+				InstigatorCharacter->GetComponentByClass(UCameraComponent::StaticClass()));
 	if (!ensure(CameraComp))
 	{
 		return false;
 	}
 
 	const FVector CameraLocation = CameraComp->GetComponentLocation();
-	const FVector ControlRotation = OwnerCharacter->GetControlRotation().Vector();
+	const FVector ControlRotation = InstigatorCharacter->GetControlRotation().Vector();
 	const FVector TraceEnd = CameraLocation + (ControlRotation * MaxAttackTraceDistance);
 	
 	FCollisionObjectQueryParams ObjectQueryParams;
@@ -79,7 +89,7 @@ bool UTAction_ProjectileAttack::ComputeAttackTarget(FVector& TargetLocation) con
 	ObjectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Pawn);
 	
 	FCollisionQueryParams CollisionQueryParams;
-	CollisionQueryParams.AddIgnoredActor(OwnerCharacter);
+	CollisionQueryParams.AddIgnoredActor(InstigatorCharacter);
 	
 	FHitResult Hit;
 	bool bBlockingHit = GetWorld()->LineTraceSingleByObjectType(

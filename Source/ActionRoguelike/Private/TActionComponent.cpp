@@ -53,13 +53,18 @@ bool UTActionComponent::StartActionByName(AActor* Instigator, const FName Action
 	{
 		if (Action->ActionName == ActionName)
 		{
+			if (!Action->CanStart(Instigator))
+			{
+				// TODO: remove debug string
+				const FString DebugMsg = FString::Printf(TEXT("Failed to run: %s (CanStart() is false.)"), *ActionName.ToString());
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, DebugMsg);
+				continue;
+			}
+			
 			Action->StartAction(Instigator);
 			return true;
 		}
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("StartActionByName: Action by the name \"%s\" not found on Actor %s"),
-		*ActionName.ToString(), *GetNameSafe(GetOwner()));
 	return false;
 }
 
@@ -69,11 +74,12 @@ bool UTActionComponent::StopActionByName(AActor* Instigator, const FName ActionN
 	{
 		if (Action && Action->ActionName == ActionName)
 		{
-			Action->StopAction(Instigator);
-			return true;
+			if (Action->IsRunning())
+			{
+				Action->StopAction(Instigator);
+				return true;
+			}
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("StopActionByName: Action by the name \"%s\" not found on Actor %s"),
-		*ActionName.ToString(), *GetNameSafe(GetOwner()));
 	return false;
 }

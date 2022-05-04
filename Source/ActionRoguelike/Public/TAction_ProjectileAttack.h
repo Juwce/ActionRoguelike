@@ -19,17 +19,17 @@ class ACTIONROGUELIKE_API UTAction_ProjectileAttack : public UTAction
 public:
 	UTAction_ProjectileAttack();
 	
-	bool ComputeAttackTarget(FVector& TargetLocation) const;
+	bool ComputeAttackTarget(ATCharacter* InstigatorCharacter, FVector& TargetLocation) const;
 
 private:
 	virtual void StartAction_Implementation(AActor* InstigatorActor) override;
 
 	virtual void StopAction_Implementation(AActor* InstigatorActor) override;
 	
-	void StartAttackTimer();
+	void StartAttackTimer(ATCharacter* InstigatorCharacter);
 
 	UFUNCTION()
-	void ExecuteAttack() const;
+	void ExecuteAttack(ATCharacter* InstigatorCharacter);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Attack")
@@ -44,9 +44,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Attack")
 	UParticleSystem* SpellCastVFX;
 
+	// Duration between action starting and attack firing
+	UPROPERTY(EditDefaultsOnly, Category = "Attack")
+	float AttackDelaySeconds;
+
 private:
-	UPROPERTY()
-	ATCharacter* OwnerCharacter;
 	
 	FTimerHandle TimerHandle;
 };
