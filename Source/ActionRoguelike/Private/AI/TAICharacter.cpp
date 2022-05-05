@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "BrainComponent.h"
 #include "DrawDebugHelpers.h"
+#include "TActionComponent.h"
 #include "TAttributeComponent.h"
 #include "TWorldUserWidget.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -22,6 +23,8 @@ ATAICharacter::ATAICharacter()
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComponent");
 	
 	AttributeComp = CreateDefaultSubobject<UTAttributeComponent>("AttributeComponent");
+
+	ActionComp = CreateDefaultSubobject<UTActionComponent>("ActionComponent");
 
 	// We want projectiles and other dynamic objects to hit the character mesh, not the capsule
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);

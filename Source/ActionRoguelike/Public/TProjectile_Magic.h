@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "TProjectileBase.h"
 #include "TProjectile_Magic.generated.h"
 
@@ -43,6 +44,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CameraShake")
 	float CameraShakeFalloff;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
 	float Damage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	FGameplayTag ParryTag;
+
+	bool bHasBeenParried;
 };

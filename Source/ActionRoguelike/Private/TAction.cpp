@@ -5,6 +5,11 @@
 
 #include "TActionComponent.h"
 
+void UTAction::Initialize(UTActionComponent* OwningActionComponent)
+{
+	OwningActionComp = OwningActionComponent;
+}
+
 bool UTAction::CanStart_Implementation(AActor* InstigatorActor)
 {
 	if (IsRunning())
@@ -49,7 +54,17 @@ void UTAction::StopAction_Implementation(AActor* InstigatorActor)
 	bIsRunning = false;
 }
 
+UWorld* UTAction::GetWorld() const
+{
+	const AActor* Actor = Cast<AActor>(GetOuter());
+	if (Actor)
+	{
+		return Actor->GetWorld();
+	}
+	return nullptr;
+}
+
 UTActionComponent* UTAction::GetOwningComponent() const
 {
-	return Cast<UTActionComponent>(GetOuter());
+	return OwningActionComp;
 }

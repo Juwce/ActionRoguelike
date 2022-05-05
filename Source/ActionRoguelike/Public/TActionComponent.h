@@ -22,6 +22,9 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	static UTActionComponent* GetActionComponent(const AActor* FromActor);
+
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	void AddAction(const TSubclassOf<UTAction> ActionClass);
 

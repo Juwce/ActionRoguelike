@@ -33,6 +33,15 @@ void UTActionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, DebugMsg);
 }
 
+UTActionComponent* UTActionComponent::GetActionComponent(const AActor* FromActor)
+{
+	if (FromActor)
+	{
+		return Cast<UTActionComponent>(FromActor->GetComponentByClass(UTActionComponent::StaticClass()));
+	}
+	return nullptr;
+}
+
 void UTActionComponent::AddAction(const TSubclassOf<UTAction> ActionClass)
 {
 	if (!ensure(ActionClass))
@@ -40,9 +49,10 @@ void UTActionComponent::AddAction(const TSubclassOf<UTAction> ActionClass)
 		return;
 	}
 
-	UTAction* NewAction = NewObject<UTAction>(this, ActionClass);
+	UTAction* NewAction = NewObject<UTAction>(GetOwner(), ActionClass);
 	if (ensure(NewAction))
 	{
+		NewAction->Initialize(this);
 		Actions.Add(NewAction);
 	}
 }

@@ -9,6 +9,7 @@
 
 class UTWorldUserWidget;
 class UTAttributeComponent;
+class UTActionComponent;
 class UPawnSensingComponent;
 UCLASS()
 class ACTIONROGUELIKE_API ATAICharacter : public ACharacter
@@ -43,6 +44,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UTAttributeComponent* AttributeComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UTActionComponent* ActionComp;
 	
 	// Lifespan of the character on death (Character is destroyed after this many seconds
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")

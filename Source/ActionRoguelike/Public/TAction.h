@@ -17,6 +17,10 @@ class ACTIONROGUELIKE_API UTAction : public UObject
 	GENERATED_BODY()
 
 public:
+	
+	virtual UWorld* GetWorld() const override;
+
+	void Initialize(UTActionComponent* OwningActionComponent);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Action")
 	bool CanStart(AActor* InstigatorActor);
@@ -24,7 +28,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Action")
 	void StartAction(AActor* InstigatorActor);
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Action")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void StopAction(AActor* InstigatorActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
@@ -38,6 +42,9 @@ public:
 	bool IsRunning() const { return bIsRunning; }
 
 protected:
+
+	UPROPERTY()
+	UTActionComponent* OwningActionComp;
 
 	/* Tags added to owning actor when activated, removed when action stops or completes */
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
