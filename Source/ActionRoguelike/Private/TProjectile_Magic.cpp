@@ -56,11 +56,12 @@ void ATProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedComponent
 	{
 		return;
 	}
+	
+	UTActionComponent* ActionComp = UTActionComponent::GetActionComponent(OtherActor);
 
 	// Parry
 	if (!bHasBeenParried)
 	{
-		const UTActionComponent* ActionComp = UTActionComponent::GetActionComponent(OtherActor);
 		if (!bHasBeenParried && ActionComp && ActionComp->ActiveGameplayTags.HasTag(ParryTag))
 		{
 			MovementComp->Velocity *= -1.f;
@@ -78,6 +79,11 @@ void ATProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedComponent
 		if (bDamageApplied)
 		{
 			Explode();
+
+			if (ActionComp && DamageEffectClass)
+			{
+				ActionComp->AddAction(GetInstigator(), DamageEffectClass);
+			}
 		}
 	}
 }
