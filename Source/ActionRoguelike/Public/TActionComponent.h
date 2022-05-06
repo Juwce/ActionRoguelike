@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "TActionEffect.h"
 #include "Components/ActorComponent.h"
 #include "TActionComponent.generated.h"
 
@@ -26,8 +27,11 @@ public:
 	static UTActionComponent* GetActionComponent(const AActor* FromActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Actions")
-	void AddAction(const TSubclassOf<UTAction> ActionClass);
+	void AddAction(AActor* Instigator, const TSubclassOf<UTAction> ActionClass);
 
+	UFUNCTION(BlueprintCallable, Category = "Actions")
+	void RemoveAction(UTAction* Action);
+	
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	bool StartActionByName(AActor* Instigator, const FName ActionName);
 		

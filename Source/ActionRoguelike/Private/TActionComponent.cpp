@@ -19,7 +19,7 @@ void UTActionComponent::BeginPlay()
 
 	for (const TSubclassOf<UTAction>& ActionClass : DefaultActions)
 	{
-		AddAction(ActionClass);
+		AddAction(GetOwner(), ActionClass);
 	}
 }
 
@@ -42,7 +42,7 @@ UTActionComponent* UTActionComponent::GetActionComponent(const AActor* FromActor
 	return nullptr;
 }
 
-void UTActionComponent::AddAction(const TSubclassOf<UTAction> ActionClass)
+void UTActionComponent::AddAction(AActor* Instigator, const TSubclassOf<UTAction> ActionClass)
 {
 	if (!ensure(ActionClass))
 	{
@@ -53,7 +53,21 @@ void UTActionComponent::AddAction(const TSubclassOf<UTAction> ActionClass)
 	if (ensure(NewAction))
 	{
 		NewAction->Initialize(this);
+		if (NewAction->bAutoStart)
+		{
+			NewAction->StartAction(Instigator);
+		}
+		
 		Actions.Add(NewAction);
+	}
+}
+
+void UTActionComponent::RemoveAction(UTAction* Action)
+{
+	if (Action && ensureMsgf(!Action->IsRunning(), TEXT("Attempting to remove a running action! Action will not be"
+													    " removed.")))
+	{
+		Actions.Remove(Action);
 	}
 }
 

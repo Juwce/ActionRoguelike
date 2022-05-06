@@ -5,6 +5,12 @@
 
 #include "TActionComponent.h"
 
+UTAction::UTAction()
+{
+	bAutoStart = false;
+	bIsRunning = false;
+}
+
 void UTAction::Initialize(UTActionComponent* OwningActionComponent)
 {
 	OwningActionComp = OwningActionComponent;
