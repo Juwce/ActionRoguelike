@@ -46,14 +46,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UBoxComponent* VolumeBounds;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Pickups")
+	UPROPERTY(EditAnywhere, Category = "Spawning | Pickups")
 	float MinDistanceBetweenPickups;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Pickups")
+	UPROPERTY(EditAnywhere, Category = "Spawning | Pickups")
 	float ZOffsetFromGround;
 
 	// Specify pickup classes to spawn, and how many of them
-	UPROPERTY(EditDefaultsOnly, Category = "Pickups")
+	UPROPERTY(EditDefaultsOnly, Category = "Spawning | Pickups")
 	TArray<FTPickupSpawnInfo> PickupActors;
 
 	UPROPERTY()
@@ -61,11 +61,11 @@ protected:
 
 	// Draw all possible spawn candidate locations (projected onto the navmesh). Warning: this may be performance
 	// intensive and lock up the editor if there are hundreds of potential spawn points
-	UPROPERTY(EditAnywhere, Category = "Editor Debugging")
+	UPROPERTY(EditAnywhere, Category = "Spawning | Editor Debugging")
 	bool bDebugDrawSpawnCandidates;
 
 	// Draw spawn points, randomly selected. Each Pickup Actor is assigned a random color.
-	UPROPERTY(EditAnywhere, Category = "Editor Debugging")
+	UPROPERTY(EditAnywhere, Category = "Spawning | Editor Debugging")
 	bool bDebugDrawSampleSpawnPoints;
 	
 private:

@@ -5,6 +5,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "TGameplayInterface.h"
+#include "TWorldUserWidget.h"
 #include "Camera/CameraComponent.h"
 
 static TAutoConsoleVariable<bool> CVarDrawInteractionDebug(
@@ -22,6 +23,61 @@ UTInteractionComponent::UTInteractionComponent()
 
 	MaxInteractDistance = 1000.f;
 }
+
+
+void UTInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+                                           FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	
+	UpdateInteractionWidgetAttachment(SelectInteractionTarget());
+}
+
+
+void UTInteractionComponent::PrimaryInteract()
+{
+	AActor* MyOwner = GetOwner();
+	if (!ensure(MyOwner))
+	{
+		return;
+	}
+
+	APawn* MyPawn = Cast<APawn>(MyOwner);
+	if (!ensure(MyPawn))
+	{
+		return;
+	}
+	
+	TArray<FHitResult> Hits;
+	ComputeInteractCandidates(Hits);
+	AActor* InteractionTarget = SelectInteractionTarget();
+	if (!InteractionTarget)
+	{
+		return;
+	}
+	
+	// Call interface functions with the "I" TGameplayInterface
+	// BlueprintNative UFUNCTIONs are Static functions prefixed
+	// with "Execute_" and called as follows:
+	ITGameplayInterface::Execute_Interact(InteractionTarget, MyPawn);
+}
+
+
+AActor* UTInteractionComponent::SelectInteractionTarget()
+{
+	TArray<FHitResult> Hits;
+	ComputeInteractCandidates(Hits);
+	for (FHitResult Hit : Hits)
+	{
+		AActor* HitActor = Hit.GetActor();
+		if (HitActor && HitActor->Implements<UTGameplayInterface>())
+		{
+			return HitActor;
+		}
+	}
+	return nullptr;
+}
+
 
 bool UTInteractionComponent::ComputeInteractCandidates(TArray<FHitResult>& Hits)
 {
@@ -66,26 +122,31 @@ bool UTInteractionComponent::ComputeInteractCandidates(TArray<FHitResult>& Hits)
 	return bBlockingHit;
 }
 
-void UTInteractionComponent::PrimaryInteract()
+
+void UTInteractionComponent::UpdateInteractionWidgetAttachment(AActor* ActorToAttachTo)
 {
-	TArray<FHitResult> Hits;
-	ComputeInteractCandidates(Hits);
-	
-	for (FHitResult Hit : Hits)
+	if (ActorToAttachTo)
 	{
-		AActor* HitActor = Hit.GetActor();
-		
-		// Check the "U" TGameplayInterface when checking for Implementation
-		if (HitActor && HitActor->Implements<UTGameplayInterface>())
+		if (!InteractionWidgetInstance && ensure(InteractionWidgetClass))
 		{
-			AActor* MyOwner = GetOwner();
-			APawn* MyPawn = Cast<APawn>(MyOwner);
-			// Call interface functions with the "I" TGameplayInterface
-			// BlueprintNative UFUNCTIONs are Static functions prefixed
-			// with "Execute_" and called as follows:
-			ITGameplayInterface::Execute_Interact(HitActor, MyPawn);
-			break;
+			InteractionWidgetInstance = CreateWidget<UTWorldUserWidget>(GetWorld(), InteractionWidgetClass);
+		}
+		
+		if (!InteractionWidgetInstance)
+		{
+			// Widget creation failed
+			return;
+		}
+
+		InteractionWidgetInstance->SetAttachedActor(ActorToAttachTo);
+		
+		if (!InteractionWidgetInstance->IsInViewport())
+		{
+			InteractionWidgetInstance->AddToViewport();
 		}
 	}
-
+	else if (InteractionWidgetInstance && InteractionWidgetInstance->IsInViewport())
+	{
+		InteractionWidgetInstance->RemoveFromViewport();
+	}
 }

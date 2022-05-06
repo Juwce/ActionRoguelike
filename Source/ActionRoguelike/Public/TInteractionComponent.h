@@ -7,6 +7,7 @@
 #include "TInteractionComponent.generated.h"
 
 
+class UTWorldUserWidget;
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ACTIONROGUELIKE_API UTInteractionComponent : public UActorComponent
 {
@@ -14,16 +15,28 @@ class ACTIONROGUELIKE_API UTInteractionComponent : public UActorComponent
 
 public:
 
-	void PrimaryInteract();
-
-	// Sets default values for this component's properties
 	UTInteractionComponent();
+
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	
+	void PrimaryInteract();
 
 protected:
 	UFUNCTION(BlueprintCallable)
 	bool ComputeInteractCandidates(TArray<FHitResult>& Hits);
+
+	UFUNCTION(BlueprintCallable)
+	AActor* SelectInteractionTarget();
+	
+	void UpdateInteractionWidgetAttachment(AActor* ActorToAttachTo);
 	
 	UPROPERTY(EditAnywhere)
 	float MaxInteractDistance;
-		
+
+	// Widget to be displayed on the interactable object when the user is looking at it
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UTWorldUserWidget> InteractionWidgetClass;
+
+	UPROPERTY()
+	UTWorldUserWidget* InteractionWidgetInstance;
 };

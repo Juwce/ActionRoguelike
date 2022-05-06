@@ -13,6 +13,7 @@
 ATPickupSpawnVolume::ATPickupSpawnVolume()
 {
 	VolumeBounds = CreateDefaultSubobject<UBoxComponent>("VolumeBounds");
+	VolumeBounds->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	RootComponent = VolumeBounds;
 
 	MinDistanceBetweenPickups = 100.f;
