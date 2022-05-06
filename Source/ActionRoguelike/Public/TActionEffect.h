@@ -26,9 +26,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect")
 	float Duration;
 
-	// The effect will be executed every "Period" seconds until "Duration" has elapsed or StopAction() is called. Must
-	// be > 0.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect", meta=(ClampMin=0.0001))
+	// The effect will be executed every "Period" seconds until "Duration" has elapsed or StopAction() is called.  Any
+	// value <= 0 will still function, just without executing the periodic effect
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect")
 	float Period;
 
 	UFUNCTION(BlueprintNativeEvent)

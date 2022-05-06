@@ -22,7 +22,7 @@ void UTActionEffect::StartAction_Implementation(AActor* InstigatorActor)
 		GetWorld()->GetTimerManager().SetTimer(DurationHandle, DurationDelegate, Duration, false);
 	}
 
-	if (ensureMsgf(Period > 0.f, TEXT("Period must be greater than 0. Periodic effect will not trigger.")))
+	if (Period > 0.f)
 	{
 		FTimerDelegate PeriodDelegate;
 		PeriodDelegate.BindUFunction(
