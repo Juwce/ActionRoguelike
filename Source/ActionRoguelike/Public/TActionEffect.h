@@ -15,6 +15,7 @@ class ACTIONROGUELIKE_API UTActionEffect : public UTAction
 {
 	GENERATED_BODY()
 
+public:
 	UTActionEffect();
 
 	virtual void StartAction_Implementation(AActor* InstigatorActor) override;

@@ -19,9 +19,45 @@ UTAttributeComponent::UTAttributeComponent()
 	HealthMax = 100.f;
 	Health = HealthMax;
 
+	RageMax = 50.f;
+	Rage = 0.f;
+	HealthToRageConversionRatio = 1.f;
+
 	bCheat_TakeNoDamage = false;
 	bCheat_TakeAlmostNoDamage = false;
 }
+
+void UTAttributeComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	OnHealthChanged.AddUniqueDynamic(this, &UTAttributeComponent::ConvertHealthChangeToRage);
+}
+
+
+void UTAttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Delta)
+{
+	const float OldRage = Rage;
+	Rage += Delta;
+	Rage = FMath::Clamp(Rage, 0.f, RageMax);
+
+	const float AppliedDelta = Rage - OldRage;
+	OnRageChanged.Broadcast(InstigatorActor, this, Rage, AppliedDelta);
+}
+
+
+void UTAttributeComponent::ConvertHealthChangeToRage(AActor* InstigatorActor, UTAttributeComponent* OwningComp,
+	float NewHealth, float HealthDelta)
+{
+	// Rage only applies when damaged.
+	if (HealthDelta > 0.f)
+	{
+		return;
+	}
+
+	const float RageDelta = -1.f * HealthDelta * HealthToRageConversionRatio;
+	ApplyRageChange(InstigatorActor, RageDelta);
+}
+
 
 void UTAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {

@@ -7,6 +7,7 @@
 #include "TAttributeComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, InstigatorActor, UTAttributeComponent*, OwningComp, float, NewHealth, float, Delta);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnRageChanged, AActor*, InstigatorActor, UTAttributeComponent*, OwningComp, float, NewRage, float, Delta);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ACTIONROGUELIKE_API UTAttributeComponent : public UActorComponent
@@ -17,9 +18,38 @@ public:
 	// Sets default values for this component's properties
 	UTAttributeComponent();
 
+	virtual void BeginPlay() override;
+
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	static UTAttributeComponent* GetAttributes(const AActor* FromActor);
 
+	UFUNCTION(BlueprintCallable)
+	void ApplyRageChange(AActor* InstigatorActor, float Delta);
+
+	UFUNCTION(BlueprintCallable)
+	void ConvertHealthChangeToRage(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth, float HealthDelta);
+
+	float GetRage() const { return Rage; }
+	float GetRageMax() const { return RageMax; }
+
+	UPROPERTY(BlueprintAssignable)
+	FOnRageChanged OnRageChanged;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	float Rage;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	float RageMax;
+
+	// Lost health points will be converted to rage at this ratio (e.g. 10 lost health points with a conversion rate of
+	// 2 would give 20 rage points. A conversion rate of 0.5 would give 5 rage points)
+	UPROPERTY()
+	float HealthToRageConversionRatio;
+
+	/*
+	 * Health
+	 */
+	
 	// Checks if the actor is alive. If the actor does not have an attribute component or is null, this returns false.
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	static bool IsActorAlive(const AActor* Actor);
