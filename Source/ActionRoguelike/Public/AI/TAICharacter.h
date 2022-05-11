@@ -25,19 +25,16 @@ protected:
 	
 	void SetBBTargetActor(AActor* Actor);
 
+	UFUNCTION(BlueprintCallable)
+	AActor* GetBBTargetActor() const;
+
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
 	
-	void Die();
-
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth, float Delta);
-
-	UFUNCTION(BlueprintCallable)
-	void ActivateHealthBarWidget();
-
-	UFUNCTION(BlueprintCallable)
-	void DeactivateHealthBarWidget();
+	
+	void Die();
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UPawnSensingComponent* PawnSensingComp;
@@ -47,23 +44,46 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UTActionComponent* ActionComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
+	FName TargetActorBBKeyName;
 	
 	// Lifespan of the character on death (Character is destroyed after this many seconds
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	float OnDeathLifeSpanDuration;
-	
+
 	/*
-	 * Health Bar Widget
+	 * Widgets
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<UUserWidget> HealthBarWidgetClass;
-
+	TSubclassOf<UTWorldUserWidget> HealthBarWidgetClass;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UTWorldUserWidget> PlayerSpottedWidgetClass;
+	
 	// Health bar will be placed at this component's location
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	USceneComponent* HealthBarLocationComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	float HealthBarLifetimeSeconds;
+
+	FTimerHandle HealthBarLifetimeHandle;
 	
 	UPROPERTY()
 	UTWorldUserWidget* ActiveHealthBarWidget;
+	
+	// Player spotted widget will be placed at this component's location
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	USceneComponent* PlayerSpottedLocationComp;
+	
+	UPROPERTY()
+	UTWorldUserWidget* ActivePlayerSpottedWidget;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	float PlayerSpottedWidgetLifetimeSeconds;
+
+	FTimerHandle PlayerSpottedWidgetLifetimeHandle;
 
 	/*
 	 * Hit Flash Effect

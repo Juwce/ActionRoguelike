@@ -21,4 +21,5 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 	static bool ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, const float DamageAmount,
 		const FHitResult& HitResult, const float ForceAmount = 300000.f);
+	
 };
