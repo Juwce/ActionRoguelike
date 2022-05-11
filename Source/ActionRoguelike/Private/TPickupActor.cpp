@@ -77,9 +77,13 @@ void ATPickupActor::PlayInteractSound() const
 
 void ATPickupActor::ApplyInteractionCredits(APawn* InstigatorPawn)
 {
-	ATPlayerController* InstigatorPlayer = Cast<ATPlayerController>(InstigatorPawn->GetController());
-	if (InstigatorPlayer)
+	const float CreditDelta = -InteractionCreditCost + InteractionCreditReward;
+	if (!FMath::IsNearlyZero(CreditDelta))
 	{
-		InstigatorPlayer->ApplyCreditChange(-InteractionCreditCost + InteractionCreditReward);
+		ATPlayerController* InstigatorPlayer = Cast<ATPlayerController>(InstigatorPawn->GetController());
+		if (InstigatorPlayer)
+		{
+			InstigatorPlayer->ApplyCreditChange(CreditDelta);
+		}
 	}
 }

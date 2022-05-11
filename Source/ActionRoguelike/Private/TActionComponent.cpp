@@ -71,6 +71,19 @@ void UTActionComponent::RemoveAction(UTAction* Action)
 	}
 }
 
+bool UTActionComponent::HasAction(const TSubclassOf<UTAction> ActionClass) const
+{
+	for (const UTAction* Action : Actions)
+	{
+		if (Action && Action->GetClass() == ActionClass)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool UTActionComponent::StartActionByName(AActor* Instigator, const FName ActionName)
 {
 	for (UTAction* Action : Actions)

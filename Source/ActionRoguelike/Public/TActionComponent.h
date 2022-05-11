@@ -31,6 +31,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	void RemoveAction(UTAction* Action);
+
+	UFUNCTION(BlueprintCallable, Category = "Actions")
+	bool HasAction(const TSubclassOf<UTAction> ActionClass) const;
 	
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	bool StartActionByName(AActor* Instigator, const FName ActionName);
