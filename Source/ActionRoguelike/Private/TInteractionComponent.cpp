@@ -29,29 +29,34 @@ void UTInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                            FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
-	UpdateInteractionWidgetAttachment(SelectInteractionTarget());
+
+	const APawn* MyPawn = Cast<APawn>(GetOwner());
+	if (MyPawn && MyPawn->IsLocallyControlled())
+	{
+		UpdateInteractionWidgetAttachment(SelectInteractionTarget());
+	}
 }
 
 
 void UTInteractionComponent::PrimaryInteract()
 {
-	AActor* MyOwner = GetOwner();
-	if (!ensure(MyOwner))
+	const APawn* MyPawn = Cast<APawn>(GetOwner());
+	if (MyPawn && MyPawn->IsLocallyControlled())
 	{
-		return;
+		ServerInteract(SelectInteractionTarget());
 	}
+}
 
-	APawn* MyPawn = Cast<APawn>(MyOwner);
-	if (!ensure(MyPawn))
+
+void UTInteractionComponent::ServerInteract_Implementation(AActor* InteractionTarget)
+{
+	if (!InteractionTarget)
 	{
 		return;
 	}
 	
-	TArray<FHitResult> Hits;
-	ComputeInteractCandidates(Hits);
-	AActor* InteractionTarget = SelectInteractionTarget();
-	if (!InteractionTarget)
+	APawn* MyPawn = Cast<APawn>(GetOwner());
+	if (!ensure(MyPawn))
 	{
 		return;
 	}

@@ -24,6 +24,13 @@ public:
 	ATItemChest();
 
 protected:
+
+	UPROPERTY(ReplicatedUsing="OnRep_bLidOpened", BlueprintReadOnly)
+	bool bLidOpened;
+
+	UFUNCTION()
+	void OnRep_bLidOpened();
+	
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* BaseMesh;
 

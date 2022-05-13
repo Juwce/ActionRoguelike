@@ -2,6 +2,7 @@
 
 
 #include "TItemChest.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ATItemChest::ATItemChest()
@@ -16,10 +17,29 @@ ATItemChest::ATItemChest()
 	LidMesh->SetupAttachment(BaseMesh);
 
 	TargetPitch = 110;
+
+	SetReplicates(true);
 }
+
+
+void ATItemChest::OnRep_bLidOpened()
+{
+	const float CurrPitch = bLidOpened ? TargetPitch : 0.f;
+	LidMesh->SetRelativeRotation(FRotator(CurrPitch, 0, 0));
+}
+
 
 void ATItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
-	LidMesh->SetRelativeRotation(FRotator(110, 0, 0));
+	bLidOpened = !bLidOpened;
+	OnRep_bLidOpened();
 }
 
+
+void ATItemChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// default rule that says to unconditionally replicate the value to all clients when changed
+	DOREPLIFETIME(ATItemChest, bLidOpened);
+}
