@@ -4,6 +4,7 @@
 #include "TAttributeComponent.h"
 
 #include "TGameModeBase.h"
+#include "Net/UnrealNetwork.h"
 
 static TAutoConsoleVariable<float> CVarDamageMultiplier(
 	TEXT("ti.DamageMultiplier"), 1.f, TEXT("Global damage modifier for Attribute Component."), ECVF_Cheat);
@@ -25,6 +26,8 @@ UTAttributeComponent::UTAttributeComponent()
 
 	bCheat_TakeNoDamage = false;
 	bCheat_TakeAlmostNoDamage = false;
+
+	SetIsReplicatedByDefault((true));
 }
 
 void UTAttributeComponent::BeginPlay()
@@ -61,6 +64,12 @@ void UTAttributeComponent::ConvertHealthChangeToRage(AActor* InstigatorActor, UT
 
 void UTAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {
+	// already dead
+	if (Health == 0.f)
+	{
+		return;
+	}
+	
 	if (bCheat_TakeNoDamage)
 	{
 		Delta = FMath::Max(Delta, 0.f);
@@ -79,9 +88,7 @@ void UTAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	const float OldHealth = Health;
 	Health += Delta;
 	Health = FMath::Clamp(Health, 0.f, HealthMax);
-
 	const float AppliedDelta = Health - OldHealth;
-	OnHealthChanged.Broadcast(InstigatorActor, this, Health, AppliedDelta);
 
 	// Died
 	if (AppliedDelta < 0.f && Health == 0.f)
@@ -92,6 +99,10 @@ void UTAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 			GM->OnActorKilled(GetOwner(), InstigatorActor);
 		}
 	}
+
+	// Broadcast last, listeners can respond to health changes with further health changes that we do not want
+	// affecting the conditional checks above
+	MulticastHealthChanged(InstigatorActor, Health, AppliedDelta);
 }
 
 void UTAttributeComponent::ApplyHealthChangeOverTime(AActor* InstigatorActor, const float Delta, const float Duration, const int32 Ticks)
@@ -133,6 +144,11 @@ void UTAttributeComponent::Kill(AActor* InstigatorActor)
 	ApplyHealthChange(InstigatorActor, -GetHealth());
 }
 
+void UTAttributeComponent::MulticastHealthChanged_Implementation(AActor* Instigator, float NewHealth, float Delta)
+{
+	OnHealthChanged.Broadcast(Instigator, this, NewHealth, Delta);
+}
+
 void UTAttributeComponent::HealthChangeOverTime_Tick(AActor* InstigatorActor, const float Delta, const float Duration)
 {
 	if (HealthChangeTicksLeft <= 0)
@@ -168,3 +184,10 @@ bool UTAttributeComponent::IsActorAlive(const AActor* Actor)
 	return false;
 }
 
+void UTAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UTAttributeComponent, Health);
+	DOREPLIFETIME(UTAttributeComponent, HealthMax);
+}

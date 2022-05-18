@@ -85,12 +85,15 @@ public:
 	
 protected:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float Health;
 
 	// Health Max, Stamina, Strength
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float HealthMax;
+
+	UFUNCTION(NetMulticast, Reliable) // TODO: mark as unreliable once we move the 'state' out of TCharacter
+	void MulticastHealthChanged(AActor* Instigator, float NewHealth, float Delta);
 	
 
 private:

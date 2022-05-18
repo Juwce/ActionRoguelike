@@ -11,6 +11,8 @@ UTActionComponent::UTActionComponent()
 	// off to improve performance if you don't need them.
 	// TODO: Toggle on/of with debug actor gameplay tags console flag
 	PrimaryComponentTick.bCanEverTick = true;
+
+	SetIsReplicatedByDefault(true);
 }
 
 void UTActionComponent::BeginPlay()
@@ -97,6 +99,11 @@ bool UTActionComponent::StartActionByName(AActor* Instigator, const FName Action
 				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, DebugMsg);
 				continue;
 			}
+
+			if (!GetOwner()->HasAuthority())
+			{
+				ServerStartAction(Instigator, ActionName);
+			}
 			
 			Action->StartAction(Instigator);
 			return true;
@@ -119,4 +126,14 @@ bool UTActionComponent::StopActionByName(AActor* Instigator, const FName ActionN
 		}
 	}
 	return false;
+}
+
+void UTActionComponent::ServerStartAction_Implementation(AActor* Instigator, FName ActionName)
+{
+	StartActionByName(Instigator, ActionName);
+}
+
+void UTActionComponent::ServerStopAction_Implementation(AActor* Instigator, FName ActionName)
+{
+	StopActionByName(Instigator, ActionName);
 }

@@ -67,7 +67,10 @@ void UTActionEffect_Thorns::OnHealthChanged(AActor* InstigatorActor, UTAttribute
 	}
 	
 	UTAttributeComponent* InstigatorAttributes = UTAttributeComponent::GetAttributes(InstigatorActor);
-	// Round negative .5 fraction down (e.g. we want -1.5 to round down to -2, not up to -1)
-	const float ThornsDamage = FMath::Sign(Delta) * FMath::RoundToFloat(FMath::Abs(Delta) * ReflectedDamageRatio);
-	InstigatorAttributes->ApplyHealthChange(DamagedActor, ThornsDamage);
+	if (ensure(InstigatorAttributes))
+	{
+		// Round negative .5 fraction down (e.g. we want -1.5 to round down to -2, not up to -1)
+		const float ThornsDamage = FMath::Sign(Delta) * FMath::RoundToFloat(FMath::Abs(Delta) * ReflectedDamageRatio);
+		InstigatorAttributes->ApplyHealthChange(DamagedActor, ThornsDamage);
+	}
 }

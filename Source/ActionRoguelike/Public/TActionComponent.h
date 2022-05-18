@@ -40,9 +40,16 @@ public:
 		
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	bool StopActionByName(AActor* Instigator, const FName ActionName);
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
 	FGameplayTagContainer ActiveGameplayTags;
+
+protected:
+	UFUNCTION(Server, Reliable)
+	void ServerStartAction(AActor* Instigator, FName ActionName);
+
+	UFUNCTION(Server, Reliable)
+	void ServerStopAction(AActor* Instigator, FName ActionName);
 
 	// Default actions to add at BeginPlay()
 	UPROPERTY(EditDefaultsOnly, Category = "Actions")

@@ -34,6 +34,8 @@ ATProjectileBase::ATProjectileBase()
 	AudioComp->SetAutoActivate(true);
 
 	bEnsureInstigator = false;
+
+	SetReplicates(true);
 }
 
 void ATProjectileBase::PostInitializeComponents()

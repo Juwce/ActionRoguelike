@@ -7,6 +7,11 @@
 
 ATPlayerState* ATPlayerController::GetTPlayerState() const
 {
+	if (!PlayerState)
+	{
+		return nullptr;
+	}
+
 	ATPlayerState* TPlayerState = Cast<ATPlayerState>(PlayerState);
 	ensureMsgf(TPlayerState, TEXT("PlayerState is not of type TPlayerState! Please set the player state class in"
 								  " the GameMode properties to be a subclass of TPlayerState."));

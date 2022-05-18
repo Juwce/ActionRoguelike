@@ -19,6 +19,8 @@ ATPickupActor::ATPickupActor()
 	StaticMesh->SetCollisionProfileName("OverlapAllDynamic");
 
 	CooldownDuration = 10.f;
+
+	SetReplicates(true);
 }
 
 void ATPickupActor::Interact_Implementation(APawn* InstigatorPawn)

@@ -162,6 +162,7 @@ void ATCharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent*
 	{
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
+		
 	}
 
 	if (Delta < 0.f)
