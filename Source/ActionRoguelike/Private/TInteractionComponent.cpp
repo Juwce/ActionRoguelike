@@ -8,8 +8,8 @@
 #include "TWorldUserWidget.h"
 #include "Camera/CameraComponent.h"
 
-static TAutoConsoleVariable<bool> CVarDrawInteractionDebug(
-	TEXT("ti.DrawDebugInteractionComponent"),
+static TAutoConsoleVariable<bool> CVarDebugInteractionComponent(
+	TEXT("ti.DebugInteractionComponent"),
 	false,
 	TEXT("Draws interaction component debug helpers to the screen."),
 	ECVF_Cheat);
@@ -113,7 +113,7 @@ bool UTInteractionComponent::ComputeInteractCandidates(TArray<FHitResult>& Hits)
 	const bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, TraceStart, TraceEnd, FQuat::Identity, ObjectQueryParams, Shape);
 
 	// Debug
-	bool bDrawDebug = CVarDrawInteractionDebug.GetValueOnGameThread();
+	bool bDrawDebug = CVarDebugInteractionComponent.GetValueOnGameThread();
 	if (bDrawDebug)
 	{
 		const FColor DebugLineColor = bBlockingHit ? FColor::Green : FColor::Red;

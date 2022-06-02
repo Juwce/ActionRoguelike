@@ -4,11 +4,13 @@
 #include "TAction.h"
 
 #include "TActionComponent.h"
+#include "ActionRoguelike/ActionRoguelike.h"
+#include "Net/UnrealNetwork.h"
 
 UTAction::UTAction()
 {
 	bAutoStart = false;
-	bIsRunning = false;
+	RepData.bIsRunning = false;
 }
 
 void UTAction::Initialize(UTActionComponent* OwningActionComponent)
@@ -34,30 +36,26 @@ bool UTAction::CanStart_Implementation(AActor* InstigatorActor)
 
 void UTAction::StartAction_Implementation(AActor* InstigatorActor)
 {
-	UE_LOG(LogTemp, Log, TEXT("Starting TAction: %s"), *GetNameSafe(this));
-
 	UTActionComponent* Comp = GetOwningComponent();
 	if (ensure(Comp))
 	{
 		Comp->ActiveGameplayTags.AppendTags(GrantsTags);
 	}
 
-	bIsRunning = true;
+	RepData.bIsRunning = true;
+	LogOnScreen(this, FString::Printf(TEXT("Started : %s"), *ActionName.ToString()), FColor::Green);
 }
 
 void UTAction::StopAction_Implementation(AActor* InstigatorActor)
 {
-	UE_LOG(LogTemp, Log, TEXT("Stopping TAction: %s"), *GetNameSafe(this));
-
-	ensureAlways(bIsRunning);
-	
 	UTActionComponent* Comp = GetOwningComponent();
 	if (ensure(Comp))
 	{
 		Comp->ActiveGameplayTags.RemoveTags(GrantsTags);
 	}
 
-	bIsRunning = false;
+	RepData.bIsRunning = false;
+	LogOnScreen(this, FString::Printf(TEXT("Stopping : %s"), *ActionName.ToString()), FColor::White);
 }
 
 UWorld* UTAction::GetWorld() const
@@ -73,4 +71,25 @@ UWorld* UTAction::GetWorld() const
 UTActionComponent* UTAction::GetOwningComponent() const
 {
 	return OwningActionComp;
+}
+
+void UTAction::OnRep_IsRunning()
+{
+	if (RepData.bIsRunning)
+	{
+		StartAction(RepData.Instigator);
+	}
+	else
+	{
+		StopAction(RepData.Instigator);
+	}
+}
+
+void UTAction::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// default rule that says to unconditionally replicate the value to all clients when changed
+	DOREPLIFETIME(UTAction, RepData);
+	DOREPLIFETIME(UTAction, OwningActionComp);
 }

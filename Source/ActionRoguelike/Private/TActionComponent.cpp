@@ -3,6 +3,15 @@
 
 #include "TActionComponent.h"
 #include "TAction.h"
+#include "ActionRoguelike/ActionRoguelike.h"
+#include "Engine/ActorChannel.h"
+#include "Net/UnrealNetwork.h"
+
+static TAutoConsoleVariable<bool> CVarDebugActiveGameplayTags(
+	TEXT("ti.DebugActiveGameplayTags"),
+	false,
+	TEXT("Draw Active Gameplay Tags to the screen"),
+	ECVF_Cheat);
 
 // Sets default values for this component's properties
 UTActionComponent::UTActionComponent()
@@ -19,9 +28,13 @@ void UTActionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	for (const TSubclassOf<UTAction>& ActionClass : DefaultActions)
+	// server instantiates actions, then actions replicate automatically to clients
+	if (GetOwner()->HasAuthority())
 	{
-		AddAction(GetOwner(), ActionClass);
+		for (const TSubclassOf<UTAction>& ActionClass : DefaultActions)
+		{
+			AddAction(GetOwner(), ActionClass);
+		}
 	}
 }
 
@@ -30,9 +43,24 @@ void UTActionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// TODO: Make toggleable with a debug actor gameplay tags console flag
-	const FString DebugMsg = GetNameSafe(GetOwner()) + " : " + ActiveGameplayTags.ToStringSimple();
-	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, DebugMsg);
+	if (CVarDebugActiveGameplayTags.GetValueOnGameThread())
+	{
+		const FString DebugMsg = GetNameSafe(GetOwner()) + " : " + ActiveGameplayTags.ToStringSimple();
+		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, DebugMsg);
+	}
+
+	for (const UTAction* Action : Actions)
+	{
+		const FColor TextColor = Action->IsRunning() ? FColor::Blue : FColor::White;
+
+		const FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s : IsRunning: %s : Outer: %s"),
+		                                          *GetNameSafe(GetOwner()),
+		                                          *Action->ActionName.ToString(),
+		                                          Action->IsRunning() ?  TEXT("true") : TEXT("false"),
+		                                          *GetNameSafe(Action->GetOuter()));
+
+		LogOnScreen(this, ActionMsg, TextColor, 0.f);
+	}
 }
 
 UTActionComponent* UTActionComponent::GetActionComponent(const AActor* FromActor)
@@ -94,12 +122,13 @@ bool UTActionComponent::StartActionByName(AActor* Instigator, const FName Action
 		{
 			if (!Action->CanStart(Instigator))
 			{
-				// TODO: remove debug string
+				// TODO: remove debug string or show conditionally via CVar
 				const FString DebugMsg = FString::Printf(TEXT("Failed to run: %s (CanStart() is false.)"), *ActionName.ToString());
 				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, DebugMsg);
 				continue;
 			}
 
+			// is client?
 			if (!GetOwner()->HasAuthority())
 			{
 				ServerStartAction(Instigator, ActionName);
@@ -137,3 +166,28 @@ void UTActionComponent::ServerStopAction_Implementation(AActor* Instigator, FNam
 {
 	StopActionByName(Instigator, ActionName);
 }
+
+void UTActionComponent::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME( UTActionComponent, Actions );
+}
+
+bool UTActionComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)
+{
+	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+
+	// Replicate every action that had a change
+	for (UTAction* Action: Actions)
+	{
+		if (Action)
+		{
+			WroteSomething |= Channel->ReplicateSubobject(Action, *Bunch, *RepFlags);
+		}
+	}
+
+	// tells Unreal "there was a change in this component, please replicate my data"
+	return WroteSomething;
+}
+

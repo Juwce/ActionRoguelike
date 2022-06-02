@@ -15,6 +15,7 @@ class ACTIONROGUELIKE_API ATPlayerState : public APlayerState
 	GENERATED_BODY()
 
 public:
+
 	int32 GetCredits() const {
 		return Credits;
 	}
@@ -25,6 +26,6 @@ public:
 	}
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
 	int32 Credits = 0;
 };
