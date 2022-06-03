@@ -63,6 +63,10 @@ protected:
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth, float Delta);
 
+	// Character will be destroyed after this many seconds on death
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attributes")
+	float LifeSpanOnDeathSeconds;
+
 	/*
 	 * Actions
 	 */
@@ -98,7 +102,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	UTActionComponent* ActionComponent;
-	
+
 	/*
 	 * Hit Flash Effect
 	 */

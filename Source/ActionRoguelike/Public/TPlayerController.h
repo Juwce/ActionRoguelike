@@ -12,6 +12,7 @@ class ATPlayerState;
  */
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnCreditsChanged, ATPlayerController*, OwningPlayer, float, NewCredits, float, Delta);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPawnChanged, APawn*, NewPawn);
 
 UCLASS()
 class ACTIONROGUELIKE_API ATPlayerController : public APlayerController
@@ -31,5 +32,10 @@ public:
 protected:
 	UPROPERTY(BlueprintAssignable)
 	FOnCreditsChanged OnCreditsChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPawnChanged OnPawnChanged;
+
+	virtual void SetPawn(APawn* InPawn) override;
 };
 

@@ -80,7 +80,7 @@ void ATProjectile_Magic::OnActorOverlap(UPrimitiveComponent* OverlappedComponent
 		{
 			Explode();
 
-			if (ActionComp && DamageEffectClass)
+			if (HasAuthority() && ActionComp && DamageEffectClass)
 			{
 				ActionComp->AddAction(GetInstigator(), DamageEffectClass);
 			}

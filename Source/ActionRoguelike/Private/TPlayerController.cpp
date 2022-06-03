@@ -38,3 +38,10 @@ void ATPlayerController::ApplyCreditChange(const int32 Delta)
 		OnCreditsChanged.Broadcast(this, TPlayerState->GetCredits(), Delta);
 	}
 }
+
+void ATPlayerController::SetPawn(APawn* InPawn)
+{
+	Super::SetPawn(InPawn);
+
+	OnPawnChanged.Broadcast(InPawn);
+}

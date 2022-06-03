@@ -86,23 +86,28 @@ void UTAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	}
 	
 	const float OldHealth = Health;
-	Health += Delta;
-	Health = FMath::Clamp(Health, 0.f, HealthMax);
-	const float AppliedDelta = Health - OldHealth;
+	const float NewHealth = FMath::Clamp(Health + Delta, 0.f, HealthMax);
+	const float AppliedDelta = NewHealth - OldHealth;
 
-	// Died
-	if (AppliedDelta < 0.f && Health == 0.f)
+	// only server should affect game state (player health, death, etc.)
+	if (GetOwner()->HasAuthority())
 	{
-		ATGameModeBase* GM = GetWorld()->GetAuthGameMode<ATGameModeBase>();
-		if (GM)
+		Health = NewHealth;
+		
+		// Died
+		if (AppliedDelta < 0.f && Health == 0.f)
 		{
-			GM->OnActorKilled(GetOwner(), InstigatorActor);
+			ATGameModeBase* GM = GetWorld()->GetAuthGameMode<ATGameModeBase>();
+			if (GM)
+			{
+				GM->OnActorKilled(GetOwner(), InstigatorActor);
+			}
 		}
-	}
 
-	// Broadcast last, listeners can respond to health changes with further health changes that we do not want
-	// affecting the conditional checks above
-	MulticastHealthChanged(InstigatorActor, Health, AppliedDelta);
+		// Broadcast last, listeners can respond to health changes with further health changes that we do not want
+		// affecting the conditional checks above
+		MulticastHealthChanged(InstigatorActor, Health, AppliedDelta);
+	}
 }
 
 void UTAttributeComponent::ApplyHealthChangeOverTime(AActor* InstigatorActor, const float Delta, const float Duration, const int32 Ticks)

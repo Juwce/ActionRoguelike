@@ -51,6 +51,8 @@ ATCharacter::ATCharacter()
 	ActionName_PrimaryAttack = "Attack_MagicProjectile";
 	ActionName_SecondaryAttack = "Attack_Dash";
 	ActionName_TertiaryAttack = "Attack_BlackHole";
+
+	LifeSpanOnDeathSeconds = 5.f;
 }
 
 // Called every frame
@@ -162,7 +164,7 @@ void ATCharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent*
 	{
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
-		
+		SetLifeSpan(LifeSpanOnDeathSeconds);
 	}
 
 	if (Delta < 0.f)

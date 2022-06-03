@@ -21,7 +21,7 @@ void UTAction_ProjectileAttack::StartAction_Implementation(AActor* InstigatorAct
 	ATCharacter* InstigatorCharacter = Cast<ATCharacter>(InstigatorActor);
 	if (ensure(InstigatorCharacter))
 	{
-		StartAttackTimer(InstigatorCharacter);
+		StartAttack(InstigatorCharacter);
 	}
 	else
 	{
@@ -36,35 +36,38 @@ void UTAction_ProjectileAttack::StopAction_Implementation(AActor* InstigatorActo
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 }
 
-void UTAction_ProjectileAttack::StartAttackTimer(ATCharacter* InstigatorCharacter)
+void UTAction_ProjectileAttack::StartAttack(ATCharacter* InstigatorCharacter)
 {
 	InstigatorCharacter->PlayAnimMontage(AttackAnim);
-	
-	FTimerDelegate TimerDel;
-	TimerDel.BindLambda([=]() { ExecuteAttack(InstigatorCharacter); });
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, AttackDelaySeconds, false);
+	UGameplayStatics::SpawnEmitterAttached(
+		SpellCastVFX, InstigatorCharacter->GetMesh(), InstigatorCharacter->GetHandSocketName());
+		
+	if (InstigatorCharacter->HasAuthority())
+	{
+		FTimerDelegate TimerDel;
+		TimerDel.BindLambda([=]() { SpawnProjectile(InstigatorCharacter); });
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, AttackDelaySeconds, false);
+	}
 }
 
-void UTAction_ProjectileAttack::ExecuteAttack(ATCharacter* InstigatorCharacter)
+void UTAction_ProjectileAttack::SpawnProjectile(ATCharacter* InstigatorCharacter)
 {
 	if (ensure(ProjectileClass))
 	{
-		const FVector HandLocation = InstigatorCharacter->GetMesh()->GetSocketLocation(InstigatorCharacter->GetHandSocketName()); 
+			const FVector HandLocation = InstigatorCharacter->GetMesh()->GetSocketLocation(InstigatorCharacter->GetHandSocketName()); 
 
-		FVector Target;
-		ComputeAttackTarget(InstigatorCharacter, Target);
+			FVector Target;
+			ComputeAttackTarget(InstigatorCharacter, Target);
 
-		const FRotator LookAtRotation = FRotationMatrix::MakeFromX(Target - HandLocation).Rotator();
-		const FTransform SpawnTM = FTransform(LookAtRotation, HandLocation);
+			const FRotator LookAtRotation = FRotationMatrix::MakeFromX(Target - HandLocation).Rotator();
+			const FTransform SpawnTM = FTransform(LookAtRotation, HandLocation);
 
-		FActorSpawnParameters SpawnParams;
-		// ignore collision checks when spawning
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParams.Instigator = InstigatorCharacter;
+			FActorSpawnParameters SpawnParams;
+			// ignore collision checks when spawning
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			SpawnParams.Instigator = InstigatorCharacter;
 
-		GetWorld()->SpawnActor<ATProjectileBase>(ProjectileClass, SpawnTM, SpawnParams);
-		UGameplayStatics::SpawnEmitterAttached(
-			SpellCastVFX, InstigatorCharacter->GetMesh(), InstigatorCharacter->GetHandSocketName());
+			GetWorld()->SpawnActor<ATProjectileBase>(ProjectileClass, SpawnTM, SpawnParams);
 	}
 
 	StopAction(InstigatorCharacter);

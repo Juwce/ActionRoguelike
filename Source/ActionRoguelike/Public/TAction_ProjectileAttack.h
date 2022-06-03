@@ -26,10 +26,10 @@ private:
 
 	virtual void StopAction_Implementation(AActor* InstigatorActor) override;
 	
-	void StartAttackTimer(ATCharacter* InstigatorCharacter);
+	void StartAttack(ATCharacter* InstigatorCharacter);
 
 	UFUNCTION()
-	void ExecuteAttack(ATCharacter* InstigatorCharacter);
+	void SpawnProjectile(ATCharacter* InstigatorCharacter);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Attack")

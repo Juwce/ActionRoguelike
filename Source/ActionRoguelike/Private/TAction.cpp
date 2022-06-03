@@ -43,6 +43,7 @@ void UTAction::StartAction_Implementation(AActor* InstigatorActor)
 	}
 
 	RepData.bIsRunning = true;
+	RepData.Instigator = InstigatorActor;
 	LogOnScreen(this, FString::Printf(TEXT("Started : %s"), *ActionName.ToString()), FColor::Green);
 }
 
@@ -55,6 +56,7 @@ void UTAction::StopAction_Implementation(AActor* InstigatorActor)
 	}
 
 	RepData.bIsRunning = false;
+	RepData.Instigator = InstigatorActor;
 	LogOnScreen(this, FString::Printf(TEXT("Stopping : %s"), *ActionName.ToString()), FColor::White);
 }
 
@@ -73,7 +75,7 @@ UTActionComponent* UTAction::GetOwningComponent() const
 	return OwningActionComp;
 }
 
-void UTAction::OnRep_IsRunning()
+void UTAction::OnRep_RepData()
 {
 	if (RepData.bIsRunning)
 	{

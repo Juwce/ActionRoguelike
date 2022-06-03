@@ -74,11 +74,11 @@ protected:
 	UPROPERTY(Replicated)
 	UTActionComponent* OwningActionComp;
 
-	UPROPERTY(ReplicatedUsing="OnRep_IsRunning")
+	UPROPERTY(ReplicatedUsing="OnRep_RepData")
 	FActionRepData RepData;
 
 	UFUNCTION()
-	void OnRep_IsRunning();
+	void OnRep_RepData();
 
 	virtual bool IsSupportedForNetworking() const override
 	{

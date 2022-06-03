@@ -53,11 +53,9 @@ void UTActionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	{
 		const FColor TextColor = Action->IsRunning() ? FColor::Blue : FColor::White;
 
-		const FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s : IsRunning: %s : Outer: %s"),
+		const FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s"),
 		                                          *GetNameSafe(GetOwner()),
-		                                          *Action->ActionName.ToString(),
-		                                          Action->IsRunning() ?  TEXT("true") : TEXT("false"),
-		                                          *GetNameSafe(Action->GetOuter()));
+		                                          *GetNameSafe(Action));
 
 		LogOnScreen(this, ActionMsg, TextColor, 0.f);
 	}
@@ -76,6 +74,15 @@ void UTActionComponent::AddAction(AActor* Instigator, const TSubclassOf<UTAction
 {
 	if (!ensure(ActionClass))
 	{
+		return;
+	}
+
+	// Skip for clients
+	if (!GetOwner()->HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("Client attempting to AddAction, Actions should only be added on the server. [Class: %s]"),
+			*GetNameSafe(ActionClass));
 		return;
 	}
 
@@ -149,6 +156,12 @@ bool UTActionComponent::StopActionByName(AActor* Instigator, const FName ActionN
 		{
 			if (Action->IsRunning())
 			{
+				// client
+				if (!GetOwner()->HasAuthority())
+				{
+					ServerStopAction(Instigator, ActionName);
+				}
+				
 				Action->StopAction(Instigator);
 				return true;
 			}
