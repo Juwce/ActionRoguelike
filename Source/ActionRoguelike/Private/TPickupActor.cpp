@@ -65,55 +65,39 @@ bool ATPickupActor::CanPickup(const APawn* InstigatorPawn)
 
 void ATPickupActor::DoPickup(APawn* InstigatorPawn)
 {
-	DeactivateAndCooldown(InstigatorPawn);
+	bActive = false;
+	OnRep_bActive();
+	
+	ApplyInteractionCredits(InstigatorPawn);
+	GetWorldTimerManager().SetTimer(CooldownTimerHandle, this, &ATPickupActor::Reactivate, CooldownDuration, false);
 }
 
-void ATPickupActor::DeactivateAndCooldown(APawn* InstigatorPawn)
+void ATPickupActor::Reactivate()
 {
-	SetActorHiddenInGame(true);
-	SetActorEnableCollision(false);
-	
-	if (HasAuthority())
-	{
-		ApplyInteractionCredits(InstigatorPawn);
-		GetWorldTimerManager().SetTimer(CooldownTimerHandle, this, &ATPickupActor::Activate, CooldownDuration, false);
-		bActive = false; // trigger OnRep_bActive on client
-	}
-
-	PlayInteractSound();
-	
-	if (CVarDebugPickupActorReplication.GetValueOnGameThread())
-	{
-		LogOnScreen(GetWorld(), FString::Printf(TEXT("[%s] Deactivated"), *GetNameSafe(this)));
-	}
-	
-}
-
-void ATPickupActor::Activate()
-{
-	SetActorEnableCollision(true);
-	SetActorHiddenInGame(false);
-	
-	if (HasAuthority())
-	{
-		bActive = true; // trigger OnRep_bActive on client
-	}
-	
-	if (CVarDebugPickupActorReplication.GetValueOnGameThread())
-	{
-		LogOnScreen(GetWorld(), FString::Printf(TEXT("[%s] Activated"), *GetNameSafe(this)));
-	}
+	bActive = true;
+	OnRep_bActive();
 }
 
 void ATPickupActor::OnRep_bActive()
 {
 	if (bActive)
 	{
-		Activate();
+		SetActorHiddenInGame(false);
+		SetActorEnableCollision(true);
 	}
-	else // deactivated / picked up
+	else
 	{
-		DeactivateAndCooldown(nullptr); // instigator only needed on Server
+		SetActorHiddenInGame(true);
+		SetActorEnableCollision(false);
+		PlayInteractSound();
+	}
+	
+	if (CVarDebugPickupActorReplication.GetValueOnGameThread())
+	{
+		LogOnScreen(GetWorld(),
+			FString::Printf(TEXT("[%s] %s"),
+				*GetNameSafe(this),
+				bActive ? TEXT("Activated") : TEXT("Deactivated")));
 	}
 }
 

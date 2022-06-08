@@ -22,12 +22,9 @@ protected:
 	virtual bool CanPickup(const APawn* InstigatorPawn);
 
 	virtual void DoPickup(APawn* InstigatorPawn);
-
-	UFUNCTION(BlueprintCallable)
-	void DeactivateAndCooldown(APawn* InstigatorPawn);
 	
 	UFUNCTION(BlueprintCallable)
-	void Activate();
+	void Reactivate();
 
 	void PlayInteractSound() const;
 
