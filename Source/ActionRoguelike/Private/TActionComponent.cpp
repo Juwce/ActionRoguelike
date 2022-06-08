@@ -13,6 +13,12 @@ static TAutoConsoleVariable<bool> CVarDebugActiveGameplayTags(
 	TEXT("Draw Active Gameplay Tags to the screen"),
 	ECVF_Cheat);
 
+static TAutoConsoleVariable<bool> CVarDebugAddedActions(
+	TEXT("ti.DebugAddedActions"),
+	false,
+	TEXT("Draw added actions to the screen"),
+	ECVF_Cheat);
+
 // Sets default values for this component's properties
 UTActionComponent::UTActionComponent()
 {
@@ -53,11 +59,14 @@ void UTActionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	{
 		const FColor TextColor = Action->IsRunning() ? FColor::Blue : FColor::White;
 
-		const FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s"),
-		                                          *GetNameSafe(GetOwner()),
-		                                          *GetNameSafe(Action));
+		if (CVarDebugAddedActions.GetValueOnGameThread())
+		{
+			const FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s"),
+													  *GetNameSafe(GetOwner()),
+													  *GetNameSafe(Action));
 
-		LogOnScreen(this, ActionMsg, TextColor, 0.f);
+			LogOnScreen(this, ActionMsg, TextColor, 0.f);
+		}
 	}
 }
 

@@ -24,7 +24,7 @@ protected:
 	virtual void DoPickup(APawn* InstigatorPawn);
 
 	UFUNCTION(BlueprintCallable)
-	void DeactivateAndCooldown();
+	void DeactivateAndCooldown(APawn* InstigatorPawn);
 	
 	UFUNCTION(BlueprintCallable)
 	void Activate();
@@ -32,6 +32,12 @@ protected:
 	void PlayInteractSound() const;
 
 	void ApplyInteractionCredits(APawn* InstigatorPawn);
+	
+	UFUNCTION()
+	void OnRep_bActive();
+	
+	UPROPERTY(ReplicatedUsing=OnRep_bActive)
+	bool bActive;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMesh;

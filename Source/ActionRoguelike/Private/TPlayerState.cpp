@@ -5,10 +5,33 @@
 
 #include "Net/UnrealNetwork.h"
 
+void ATPlayerState::SetCredits(AActor* InstigatorActor, const float NewCredits)
+{
+	ensure(InstigatorActor);
+	
+	if (HasAuthority())
+	{
+		const float Delta = NewCredits - Credits;
+		Credits = NewCredits;
+		MulticastCreditsChanged(InstigatorActor, Credits, Delta);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("Instigator [%s] attempted to change [%s]'s credits without authority!"),
+			*GetNameSafe(InstigatorActor),
+			*GetNameSafe(this));
+	}
+}
+
+void ATPlayerState::MulticastCreditsChanged_Implementation(AActor* InstigatorActor, float NewCredits, float Delta)
+{
+	OnCreditsChanged.Broadcast(InstigatorActor, this, NewCredits, Delta);
+}
+
 void ATPlayerState::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME( ATPlayerState, Credits );
 }
-

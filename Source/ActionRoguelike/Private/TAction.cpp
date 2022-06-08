@@ -44,7 +44,6 @@ void UTAction::StartAction_Implementation(AActor* InstigatorActor)
 
 	RepData.bIsRunning = true;
 	RepData.Instigator = InstigatorActor;
-	LogOnScreen(this, FString::Printf(TEXT("Started : %s"), *ActionName.ToString()), FColor::Green);
 }
 
 void UTAction::StopAction_Implementation(AActor* InstigatorActor)
@@ -57,7 +56,6 @@ void UTAction::StopAction_Implementation(AActor* InstigatorActor)
 
 	RepData.bIsRunning = false;
 	RepData.Instigator = InstigatorActor;
-	LogOnScreen(this, FString::Printf(TEXT("Stopping : %s"), *ActionName.ToString()), FColor::White);
 }
 
 UWorld* UTAction::GetWorld() const

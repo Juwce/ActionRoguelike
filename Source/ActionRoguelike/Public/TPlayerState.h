@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerState.h"
 #include "TPlayerState.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnCreditsChanged, AActor*, Instigator, ATPlayerState*, OwningPlayerState, float, NewCredits, float, Delta);
 /**
  * 
  */
@@ -16,16 +17,19 @@ class ACTIONROGUELIKE_API ATPlayerState : public APlayerState
 
 public:
 
-	int32 GetCredits() const {
-		return Credits;
-	}
+	float GetCredits() const { return Credits; }
 
-	void SetCredits(const float NewCredits)
-	{
-		Credits = NewCredits;
-	}
+	UFUNCTION(BlueprintCallable)
+	void SetCredits(AActor* InstigatorActor, const float NewCredits);
+
 
 protected:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
-	int32 Credits = 0;
+	float Credits = 0;
+	
+	UFUNCTION(NetMulticast, Reliable) // TODO: mark as unreliable once we move the 'state' out of TCharacter
+	void MulticastCreditsChanged(AActor* InstigatorActor, float NewCredits, float Delta);
+
+	UPROPERTY(BlueprintAssignable)
+	FOnCreditsChanged OnCreditsChanged;
 };

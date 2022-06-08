@@ -18,7 +18,7 @@ ATPlayerState* ATPlayerController::GetTPlayerState() const
 	return TPlayerState;
 }
 
-bool ATPlayerController::HasEnoughCredits(const int32 Credits) const
+bool ATPlayerController::HasEnoughCredits(const float Credits) const
 {
 	ATPlayerState* TPlayerState = GetTPlayerState();
 	if (TPlayerState)
@@ -29,13 +29,12 @@ bool ATPlayerController::HasEnoughCredits(const int32 Credits) const
 	return false;
 }
 
-void ATPlayerController::ApplyCreditChange(const int32 Delta)
+void ATPlayerController::ApplyCreditChange(AActor* InstigatorActor, const float Delta)
 {
 	ATPlayerState* TPlayerState = GetTPlayerState();
-	if (TPlayerState)
+	if (ensure(TPlayerState))
 	{
-		TPlayerState->SetCredits(TPlayerState->GetCredits() + Delta);
-		OnCreditsChanged.Broadcast(this, TPlayerState->GetCredits(), Delta);
+		TPlayerState->SetCredits(InstigatorActor, TPlayerState->GetCredits() + Delta);
 	}
 }
 

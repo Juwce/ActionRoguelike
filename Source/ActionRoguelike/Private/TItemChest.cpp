@@ -18,7 +18,7 @@ ATItemChest::ATItemChest()
 
 	TargetPitch = 110;
 
-	SetReplicates(true);
+	bReplicates = true;
 }
 
 

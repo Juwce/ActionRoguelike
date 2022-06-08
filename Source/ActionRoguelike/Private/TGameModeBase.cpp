@@ -77,7 +77,7 @@ void ATGameModeBase::OnActorKilled(AActor* VictimActor, AActor* InstigatorActor)
 			ATPlayerController* InstigatorPlayer = Cast<ATPlayerController>(InstigatorPawn->GetController());
 			if (InstigatorPlayer)
 			{
-				InstigatorPlayer->ApplyCreditChange(BotKillCreditDelta);
+				InstigatorPlayer->ApplyCreditChange(VictimActor, BotKillCreditDelta);
 			}
 		}
 	}

@@ -23,22 +23,32 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	static UTAttributeComponent* GetAttributes(const AActor* FromActor);
 
+public:
+	/*
+	 * Rage
+	 */
 	UFUNCTION(BlueprintCallable)
 	void ApplyRageChange(AActor* InstigatorActor, float Delta);
+	float GetRage() const { return Rage; }
+	float GetRageMax() const { return RageMax; }
+
+protected:
 
 	UFUNCTION(BlueprintCallable)
 	void ConvertHealthChangeToRage(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth, float HealthDelta);
 
-	float GetRage() const { return Rage; }
-	float GetRageMax() const { return RageMax; }
-
 	UPROPERTY(BlueprintAssignable)
 	FOnRageChanged OnRageChanged;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRageChanged(AActor* InstigatorActor, float NewRage, float Delta);
+
+	void SetRage(const float NewRage) { Rage = NewRage; }
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float Rage;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float RageMax;
 
 	// Lost health points will be converted to rage at this ratio (e.g. 10 lost health points with a conversion rate of
@@ -46,6 +56,7 @@ public:
 	UPROPERTY()
 	float HealthToRageConversionRatio;
 
+public:
 	/*
 	 * Health
 	 */
@@ -84,6 +95,8 @@ public:
 	bool bCheat_TakeAlmostNoDamage;
 	
 protected:
+	
+	void SetHealth(const float NewHealth) { Health = NewHealth; }
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float Health;

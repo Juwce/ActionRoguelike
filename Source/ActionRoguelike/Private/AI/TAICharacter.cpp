@@ -56,33 +56,42 @@ void ATAICharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	PawnSensingComp->OnSeePawn.AddDynamic(this, &ATAICharacter::OnPawnSeen);
+	if (HasAuthority())
+	{
+		PawnSensingComp->OnSeePawn.AddDynamic(this, &ATAICharacter::OnPawnSeen);
+	}
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ATAICharacter::OnHealthChanged);
 }
 
 
 void ATAICharacter::SetBBTargetActor(AActor* Actor)
 {
-	AAIController* AIController = Cast<AAIController>(GetController());
-	if (ensure(AIController))
+	if (ensure(HasAuthority()))
 	{
-		UBlackboardComponent* BBComp = AIController->GetBlackboardComponent();
-		check(BBComp != nullptr);
+		AAIController* AIController = Cast<AAIController>(GetController());
+		if (ensure(AIController))
+		{
+			UBlackboardComponent* BBComp = AIController->GetBlackboardComponent();
+			check(BBComp != nullptr);
 
-		BBComp->SetValueAsObject(TargetActorBBKeyName, Actor);
+			BBComp->SetValueAsObject(TargetActorBBKeyName, Actor);
+		}
 	}
 }
 
 
 AActor* ATAICharacter::GetBBTargetActor() const
 {
-	AAIController* AIController = Cast<AAIController>(GetController());
-	if (ensure(AIController))
+	if (ensure(HasAuthority()))
 	{
-		const UBlackboardComponent* BBComp = AIController->GetBlackboardComponent();
-		check(BBComp != nullptr);
-		
-		return Cast<AActor>(BBComp->GetValueAsObject(TargetActorBBKeyName));
+		AAIController* AIController = Cast<AAIController>(GetController());
+		if (ensure(AIController))
+		{
+			const UBlackboardComponent* BBComp = AIController->GetBlackboardComponent();
+			check(BBComp != nullptr);
+			
+			return Cast<AActor>(BBComp->GetValueAsObject(TargetActorBBKeyName));
+		}
 	}
 
 	return nullptr;
@@ -91,14 +100,22 @@ AActor* ATAICharacter::GetBBTargetActor() const
 
 void ATAICharacter::OnPawnSeen(APawn* Pawn)
 {
-	if (Pawn != GetBBTargetActor())
+	if (HasAuthority())
 	{
-		UTWorldUserWidget::ActivateWorldWidgetOnTimer(ActivePlayerSpottedWidget, PlayerSpottedWidgetClass,
-			this,PlayerSpottedLocationComp->GetRelativeLocation(),
-			PlayerSpottedWidgetLifetimeHandle, PlayerSpottedWidgetLifetimeSeconds);
+		if (Pawn != GetBBTargetActor())
+		{
+			MulticastOnNewPawnSpotted();
+		}
+		
+		SetBBTargetActor(Pawn);
 	}
-	
-	SetBBTargetActor(Pawn);
+}
+
+void ATAICharacter::MulticastOnNewPawnSpotted_Implementation()
+{
+	UTWorldUserWidget::ActivateWorldWidgetOnTimer(ActivePlayerSpottedWidget, PlayerSpottedWidgetClass,
+		this,PlayerSpottedLocationComp->GetRelativeLocation(),
+		PlayerSpottedWidgetLifetimeHandle, PlayerSpottedWidgetLifetimeSeconds);
 }
 
 
@@ -114,9 +131,10 @@ void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponen
 
 		if (!OwningComp->IsAlive())
 		{
+			// TODO: replicate death
 			Die();
 		}
-		else if (InstigatorActor && InstigatorActor != this)
+		else if (HasAuthority() && InstigatorActor != this)
 		{
 			SetBBTargetActor(InstigatorActor);
 		}
@@ -126,16 +144,22 @@ void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponen
 
 void ATAICharacter::Die()
 {
-	if (ensure(AttributeComp))
+	if (HasAuthority())
 	{
-		AttributeComp->StopHealthChangeOverTime();
-	}
+		if (ensure(AttributeComp))
+		{
+			AttributeComp->StopHealthChangeOverTime();
+		}
+			
+		// stop BT
+		const AAIController* AIController = Cast<AAIController>(GetController());
+		if (ensure(AIController))
+		{
+			AIController->GetBrainComponent()->StopLogic("Killed");
+		}
 		
-	// stop BT
-	const AAIController* AIController = Cast<AAIController>(GetController());
-	if (ensure(AIController))
-	{
-		AIController->GetBrainComponent()->StopLogic("Killed");
+		// set lifespan (time to ragdoll and see corpse before destroying it)
+		SetLifeSpan(OnDeathLifeSpanDuration);
 	}
 
 	// ragdoll - force all bones to use physics (bones can use physics or animation settings)
@@ -144,9 +168,6 @@ void ATAICharacter::Die()
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->DisableMovement();
-
-	// set lifespan (time to ragdoll and see corpse before destroying it)
-	SetLifeSpan(OnDeathLifeSpanDuration);
 
 	UTWorldUserWidget::DeactivateWorldWidgetAndTimer(ActiveHealthBarWidget, HealthBarLifetimeHandle);
 	UTWorldUserWidget::DeactivateWorldWidgetAndTimer(ActivePlayerSpottedWidget, PlayerSpottedWidgetLifetimeHandle);

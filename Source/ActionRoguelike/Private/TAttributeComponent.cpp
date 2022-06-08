@@ -4,6 +4,7 @@
 #include "TAttributeComponent.h"
 
 #include "TGameModeBase.h"
+#include "ActionRoguelike/ActionRoguelike.h"
 #include "Net/UnrealNetwork.h"
 
 static TAutoConsoleVariable<float> CVarDamageMultiplier(
@@ -33,18 +34,28 @@ UTAttributeComponent::UTAttributeComponent()
 void UTAttributeComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	OnHealthChanged.AddUniqueDynamic(this, &UTAttributeComponent::ConvertHealthChangeToRage);
+	if (GetOwner()->HasAuthority())
+	{
+		OnHealthChanged.AddUniqueDynamic(this, &UTAttributeComponent::ConvertHealthChangeToRage);
+	}
 }
-
 
 void UTAttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Delta)
 {
-	const float OldRage = Rage;
-	Rage += Delta;
-	Rage = FMath::Clamp(Rage, 0.f, RageMax);
+	if (GetOwner()->HasAuthority())
+	{
+		const float OldRage = Rage;
+		const float NewRage = FMath::Clamp(Rage + Delta, 0.f, RageMax);
 
-	const float AppliedDelta = Rage - OldRage;
-	OnRageChanged.Broadcast(InstigatorActor, this, Rage, AppliedDelta);
+		const float AppliedDelta = NewRage - OldRage;
+		SetRage(NewRage);
+		MulticastRageChanged(InstigatorActor, NewRage, AppliedDelta);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[%s] attempted to change [%s]'s rage but does not have authority!"),
+			*GetNameSafe(InstigatorActor), *GetNameSafe(GetOwner()));
+	}
 }
 
 
@@ -61,6 +72,10 @@ void UTAttributeComponent::ConvertHealthChangeToRage(AActor* InstigatorActor, UT
 	ApplyRageChange(InstigatorActor, RageDelta);
 }
 
+void UTAttributeComponent::MulticastRageChanged_Implementation(AActor* InstigatorActor, float NewRage, float Delta)
+{
+	OnRageChanged.Broadcast(InstigatorActor, this, NewRage, Delta);
+}
 
 void UTAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {
@@ -92,7 +107,7 @@ void UTAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	// only server should affect game state (player health, death, etc.)
 	if (GetOwner()->HasAuthority())
 	{
-		Health = NewHealth;
+		SetHealth(NewHealth);
 		
 		// Died
 		if (AppliedDelta < 0.f && Health == 0.f)
@@ -106,7 +121,7 @@ void UTAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 
 		// Broadcast last, listeners can respond to health changes with further health changes that we do not want
 		// affecting the conditional checks above
-		MulticastHealthChanged(InstigatorActor, Health, AppliedDelta);
+		MulticastHealthChanged(InstigatorActor, NewHealth, AppliedDelta);
 	}
 }
 
@@ -195,4 +210,7 @@ void UTAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(UTAttributeComponent, Health);
 	DOREPLIFETIME(UTAttributeComponent, HealthMax);
+	
+	DOREPLIFETIME(UTAttributeComponent, Rage);
+	DOREPLIFETIME(UTAttributeComponent, RageMax);
 }

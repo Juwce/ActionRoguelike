@@ -35,7 +35,7 @@ ATProjectileBase::ATProjectileBase()
 
 	bEnsureInstigator = false;
 
-	SetReplicates(true);
+	bReplicates = true;
 }
 
 void ATProjectileBase::PostInitializeComponents()
