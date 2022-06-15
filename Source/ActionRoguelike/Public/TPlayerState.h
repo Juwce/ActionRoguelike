@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TGameModeBase.h"
+#include "TSaveGame.h"
 #include "GameFramework/PlayerState.h"
 #include "TPlayerState.generated.h"
 
@@ -22,6 +24,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetCredits(AActor* InstigatorActor, const float NewCredits);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void SavePlayerState(UTSaveGame* SaveGame);
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void LoadPlayerState(const UTSaveGame* SaveGame);
 
 protected:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)

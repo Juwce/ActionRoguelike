@@ -6,16 +6,17 @@
 #include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
 #include "NavigationSystem.h"
-#include "TActorSpawnHelpers.h"
 #include "TAttributeComponent.h"
 #include "TCharacter.h"
-#include "TPickupActor.h"
 #include "TPickupSpawnVolume.h"
 #include "TPlayerController.h"
 #include "TPlayerState.h"
+#include "TSaveGame.h"
 #include "AI/TAICharacter.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
+#include "GameFramework/GameStateBase.h"
+#include "Kismet/GameplayStatics.h"
 
 static TAutoConsoleVariable<bool> CVarSpawnBots(
 	TEXT("ti.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
@@ -27,6 +28,8 @@ ATGameModeBase::ATGameModeBase()
 	PlayerRespawnDelay = 2.f;
 
 	PlayerStateClass = ATPlayerState::StaticClass();
+
+	SaveSlotName = "SaveGame01";
 }
 
 void ATGameModeBase::StartPlay()
@@ -39,6 +42,25 @@ void ATGameModeBase::StartPlay()
 		TimerHandle_SpawnBot, this, &ATGameModeBase::TrySpawnBot, SpawnBotIntervalSeconds, true);
 
 	SpawnPickups();
+}
+
+void ATGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+
+	LoadSaveGame();	
+}
+
+void ATGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+
+	ATPlayerState* PS = NewPlayer->GetPlayerState<ATPlayerState>();
+	if (PS)
+	{
+		// TODO: this loads the same credit value into every starting player (problematic in multiplayer)
+		PS->LoadPlayerState(CurrentSaveGame);
+	}
 }
 
 void ATGameModeBase::CheatKillAllBots()
@@ -183,4 +205,37 @@ void ATGameModeBase::OnSpawnBotQueryComplete(UEnvQueryInstanceBlueprintWrapper* 
 	
 	GetWorld()->SpawnActor<AActor>(SpawnedBotClass, Locations[0], FRotator::ZeroRotator);
 	DrawDebugSphere(GetWorld(), Locations[0], 50.f, 20, FColor::Blue, false, 60.f);
+}
+
+void ATGameModeBase::WriteSaveGame()
+{
+	for (int32 i = 0; i < GameState->PlayerArray.Num(); i++)
+	{
+		ATPlayerState* PS = Cast<ATPlayerState>(GameState->PlayerArray[i]);
+		if (PS)
+		{
+			PS->SavePlayerState(CurrentSaveGame);
+		}
+		
+	}
+	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SaveSlotName, 0);
+}
+
+void ATGameModeBase::LoadSaveGame()
+{
+	if (UGameplayStatics::DoesSaveGameExist(SaveSlotName, 0))
+	{
+		CurrentSaveGame = Cast<UTSaveGame>(UGameplayStatics::LoadGameFromSlot(SaveSlotName, 0));
+		if (CurrentSaveGame == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load SaveGame Data."));
+			return;
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("Loaded SaveGame Data."));
+	}
+	else
+	{
+		CurrentSaveGame = Cast<UTSaveGame>(UGameplayStatics::CreateSaveGameObject(UTSaveGame::StaticClass()));
+	}
 }

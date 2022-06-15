@@ -24,6 +24,19 @@ void ATPlayerState::SetCredits(AActor* InstigatorActor, const float NewCredits)
 	}
 }
 
+void ATPlayerState::LoadPlayerState_Implementation(const UTSaveGame* SaveGame)
+{
+	if (SaveGame)
+	{
+		Credits = SaveGame->Credits;
+	}
+}
+
+void ATPlayerState::SavePlayerState_Implementation(UTSaveGame* SaveGame)
+{
+	SaveGame->Credits = GetCredits();
+}
+
 void ATPlayerState::MulticastCreditsChanged_Implementation(AActor* InstigatorActor, float NewCredits, float Delta)
 {
 	OnCreditsChanged.Broadcast(InstigatorActor, this, NewCredits, Delta);

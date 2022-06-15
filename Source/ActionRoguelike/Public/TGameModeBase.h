@@ -7,6 +7,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "TGameModeBase.generated.h"
 
+class UTSaveGame;
 class ATPlayerState;
 class ATPickupActor;
 class UEnvQuery;
@@ -24,6 +25,10 @@ public:
 	ATGameModeBase();
 	
 	virtual void StartPlay() override;
+
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 
 	UFUNCTION(Exec)
 	void CheatKillAllBots();
@@ -86,4 +91,19 @@ protected:
 private:
 	FTimerHandle TimerHandle_SpawnBot;
 
+
+	/*
+	 * Saving and Loading
+	 */
+public:
+	FString SaveSlotName;
+
+	UPROPERTY()
+	UTSaveGame* CurrentSaveGame;
+	
+	UFUNCTION(BlueprintCallable, Category = "SaveGame")
+	void WriteSaveGame();
+
+	UFUNCTION()
+	void LoadSaveGame();
 };
