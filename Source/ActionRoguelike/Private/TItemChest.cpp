@@ -35,6 +35,11 @@ void ATItemChest::Interact_Implementation(APawn* InstigatorPawn)
 	OnRep_bLidOpened();
 }
 
+void ATItemChest::OnActorLoaded_Implementation()
+{
+	OnRep_bLidOpened();
+}
+
 
 void ATItemChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

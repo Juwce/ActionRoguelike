@@ -8,6 +8,7 @@
 #include "NavigationSystem.h"
 #include "TAttributeComponent.h"
 #include "TCharacter.h"
+#include "TGameplayInterface.h"
 #include "TPickupSpawnVolume.h"
 #include "TPlayerController.h"
 #include "TPlayerState.h"
@@ -17,6 +18,7 @@
 #include "EnvironmentQuery/EnvQueryTypes.h"
 #include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
 static TAutoConsoleVariable<bool> CVarSpawnBots(
 	TEXT("ti.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
@@ -207,18 +209,67 @@ void ATGameModeBase::OnSpawnBotQueryComplete(UEnvQueryInstanceBlueprintWrapper* 
 	DrawDebugSphere(GetWorld(), Locations[0], 50.f, 20, FColor::Blue, false, 60.f);
 }
 
+
 void ATGameModeBase::WriteSaveGame()
 {
+	SavePlayerStates(CurrentSaveGame);
+	SaveGameplayActors(CurrentSaveGame);
+	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SaveSlotName, 0);
+}
+
+void ATGameModeBase::SavePlayerStates(UTSaveGame* SaveGame) const
+{
+	if (!ensure(SaveGame))
+	{
+		return;
+	}
+	
+	// Iterate all player states, we don't have a proper ID to match yet (requires Stream or EOS)
 	for (int32 i = 0; i < GameState->PlayerArray.Num(); i++)
 	{
 		ATPlayerState* PS = Cast<ATPlayerState>(GameState->PlayerArray[i]);
 		if (PS)
 		{
-			PS->SavePlayerState(CurrentSaveGame);
+			PS->SavePlayerState(SaveGame);
+			break; // single player only at this point
 		}
-		
 	}
-	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SaveSlotName, 0);
+}
+
+void ATGameModeBase::SaveGameplayActors(UTSaveGame* SaveGame) const
+{
+	if (!ensure(SaveGame))
+	{
+		return;
+	}
+	
+	SaveGame->SavedActors.Empty();
+	
+	// Iterate the entire world of actors
+	for (FActorIterator It(GetWorld()); It; ++It)
+	{
+		AActor* Actor = *It;
+		// Only interested in our 'gameplay actors'
+		if (!Actor->Implements<UTGameplayInterface>())
+		{
+			continue;
+		}
+
+		FActorSaveData ActorData;
+		ActorData.ActorName = Actor->GetName();
+		ActorData.Transform = Actor->GetActorTransform();
+
+		// Pass the array to fill with data from Actor
+		FMemoryWriter MemWriter(ActorData.ByteData);
+
+		FObjectAndNameAsStringProxyArchive Ar(MemWriter, true);
+		// Find only variables with UPROPERTY(SaveGame)
+		Ar.ArIsSaveGame = true;
+		// Convert Actor's SaveGame UPROPERTIES into binary array
+		Actor->Serialize(Ar);
+
+		SaveGame->SavedActors.Add(ActorData);
+	}
 }
 
 void ATGameModeBase::LoadSaveGame()
@@ -232,10 +283,41 @@ void ATGameModeBase::LoadSaveGame()
 			return;
 		}
 
+
+		for (FActorIterator It(GetWorld()); It; ++It)
+		{
+			AActor* Actor = *It;
+			// Only interested in our 'gameplay actors'
+			if (!Actor->Implements<UTGameplayInterface>())
+			{
+				continue;
+			}
+
+			for (FActorSaveData ActorData : CurrentSaveGame->SavedActors)
+			{
+				if (ActorData.ActorName == Actor->GetName())
+				{
+					Actor->SetActorTransform(ActorData.Transform);
+					
+					// Pass the array to fill with data from Actor
+					FMemoryReader MemReader(ActorData.ByteData);
+			
+					FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
+					Ar.ArIsSaveGame = true;
+					// Convert binary array into actor's variables
+					Actor->Serialize(Ar);
+					
+					ITGameplayInterface::Execute_OnActorLoaded(Actor);
+					break;
+				}
+			}
+		}
+		
 		UE_LOG(LogTemp, Log, TEXT("Loaded SaveGame Data."));
 	}
 	else
 	{
 		CurrentSaveGame = Cast<UTSaveGame>(UGameplayStatics::CreateSaveGameObject(UTSaveGame::StaticClass()));
+		UE_LOG(LogTemp, Log, TEXT("No SaveGame Data found, creating a new save."));
 	}
 }

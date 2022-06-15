@@ -103,6 +103,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "SaveGame")
 	void WriteSaveGame();
+	
+	void SavePlayerStates(UTSaveGame* SaveGame) const;
+	void SaveGameplayActors(UTSaveGame* SaveGame) const;
 
 	UFUNCTION()
 	void LoadSaveGame();
