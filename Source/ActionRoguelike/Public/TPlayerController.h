@@ -19,6 +19,12 @@ class ACTIONROGUELIKE_API ATPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+
+	virtual void BeginPlayingState() override;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void BlueprintBeginPlayingState();
+	
 	UFUNCTION(BlueprintCallable)
 	ATPlayerState* GetTPlayerState() const;
 

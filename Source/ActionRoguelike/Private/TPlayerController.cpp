@@ -5,6 +5,16 @@
 
 #include "TPlayerState.h"
 
+void ATPlayerController::BeginPlayingState()
+{
+	Super::BeginPlayingState();
+	BlueprintBeginPlayingState();
+}
+
+void ATPlayerController::BlueprintBeginPlayingState_Implementation()
+{
+}
+
 ATPlayerState* ATPlayerController::GetTPlayerState() const
 {
 	if (!PlayerState)
