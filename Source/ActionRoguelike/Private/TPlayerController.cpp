@@ -4,6 +4,7 @@
 #include "TPlayerController.h"
 
 #include "TPlayerState.h"
+#include "Blueprint/UserWidget.h"
 
 void ATPlayerController::BeginPlayingState()
 {
@@ -28,6 +29,37 @@ ATPlayerState* ATPlayerController::GetTPlayerState() const
 	return TPlayerState;
 }
 
+void ATPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	InputComponent->BindAction("PauseMenu", IE_Pressed, this, &ATPlayerController::TogglePauseMenu);
+}
+
+void ATPlayerController::TogglePauseMenu()
+{
+	// Disable pause menu
+	if (PauseMenuInstance && PauseMenuInstance->IsInViewport())
+	{
+		PauseMenuInstance->RemoveFromParent();
+		PauseMenuInstance = nullptr;
+		
+		bShowMouseCursor = false;
+		SetInputMode(FInputModeGameOnly());
+	}
+	// Enable pause menu
+	else
+	{
+		PauseMenuInstance = CreateWidget<UUserWidget>(this, PauseMenuClass);
+		if (PauseMenuInstance)
+		{
+			PauseMenuInstance->AddToViewport(PauseMenuZOrder);
+			bShowMouseCursor = true;
+			SetInputMode(FInputModeUIOnly());
+		}
+	}
+}
+
 bool ATPlayerController::HasEnoughCredits(const float Credits) const
 {
 	ATPlayerState* TPlayerState = GetTPlayerState();
@@ -47,6 +79,7 @@ void ATPlayerController::ApplyCreditChange(AActor* InstigatorActor, const float 
 		TPlayerState->SetCredits(InstigatorActor, TPlayerState->GetCredits() + Delta);
 	}
 }
+
 
 void ATPlayerController::SetPawn(APawn* InPawn)
 {

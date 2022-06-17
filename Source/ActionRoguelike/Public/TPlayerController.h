@@ -28,12 +28,35 @@ public:
 	UFUNCTION(BlueprintCallable)
 	ATPlayerState* GetTPlayerState() const;
 
+	virtual void SetupInputComponent() override;
+
+	/*
+	 * Pause Menu
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> PauseMenuClass;
+
+	UPROPERTY()
+	UUserWidget* PauseMenuInstance;
+
+	int32 PauseMenuZOrder = 100;
+
+	UFUNCTION(BlueprintCallable)
+	void TogglePauseMenu();
+
+	/*
+	 * Credits
+	 */
+public:
 	bool HasEnoughCredits(float Credits) const;
 	
 	// TODO: Move credits functionality into an interface and have this class inherit from it (we want non-player actors to be able to work with credits...)
 	UFUNCTION(BlueprintCallable)
 	void ApplyCreditChange(AActor* InstigatorActor, const float Delta);
 
+	/*
+	 * Controlled Pawn
+	 */
 protected:
 
 	UPROPERTY(BlueprintAssignable)
