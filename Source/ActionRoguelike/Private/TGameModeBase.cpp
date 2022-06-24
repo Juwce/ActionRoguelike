@@ -55,14 +55,14 @@ void ATGameModeBase::InitGame(const FString& MapName, const FString& Options, FS
 
 void ATGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
-	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
-
 	ATPlayerState* PS = NewPlayer->GetPlayerState<ATPlayerState>();
 	if (PS)
 	{
 		// TODO: this loads the same credit value into every starting player (problematic in multiplayer)
 		PS->LoadPlayerState(CurrentSaveGame);
 	}
+	
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
 }
 
 void ATGameModeBase::CheatKillAllBots()

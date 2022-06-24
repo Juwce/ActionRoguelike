@@ -28,7 +28,7 @@ void ATPlayerState::LoadPlayerState_Implementation(const UTSaveGame* SaveGame)
 {
 	if (SaveGame)
 	{
-		Credits = SaveGame->Credits;
+		SetCredits(this, SaveGame->Credits);
 	}
 }
 
