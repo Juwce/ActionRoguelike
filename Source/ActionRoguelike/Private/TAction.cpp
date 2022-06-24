@@ -45,6 +45,12 @@ void UTAction::StartAction_Implementation(AActor* InstigatorActor)
 	RepData.bIsRunning = true;
 	RepData.Instigator = InstigatorActor;
 
+	// server
+	if (GetOwningComponent()->GetOwnerRole() == ROLE_Authority)
+	{
+		TimeStarted = GetWorld()->GetTimeSeconds();
+	}
+
 	GetOwningComponent()->OnActionStarted.Broadcast(GetOwningComponent(), this);
 }
 
@@ -96,4 +102,5 @@ void UTAction::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 	// default rule that says to unconditionally replicate the value to all clients when changed
 	DOREPLIFETIME(UTAction, RepData);
 	DOREPLIFETIME(UTAction, OwningActionComp);
+	DOREPLIFETIME(UTAction, TimeStarted);
 }

@@ -22,7 +22,14 @@ public:
 
 	virtual void StopAction_Implementation(AActor* InstigatorActor) override;
 
+	UFUNCTION(BlueprintCallable)
+	float GetTimeRemaining() const;
+
 protected:
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void ExecutePeriodicEffect(AActor* InstigatorActor);
+
 	// The total duration the effect should last. Any value <= 0 will last indefinitely until StopAction() is called.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect")
 	float Duration;
@@ -31,9 +38,6 @@ protected:
 	// value <= 0 will still function, just without executing the periodic effect
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effect")
 	float Period;
-
-	UFUNCTION(BlueprintNativeEvent)
-	void ExecutePeriodicEffect(AActor* InstigatorActor);
 
 	FTimerHandle DurationHandle;
 	

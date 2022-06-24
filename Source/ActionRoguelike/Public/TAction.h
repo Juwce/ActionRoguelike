@@ -66,6 +66,9 @@ public:
 
 protected:
 
+	UPROPERTY(Replicated)
+	float TimeStarted;
+
 	/* Tags added to owning actor when activated, removed when action stops or completes */
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
 	FGameplayTagContainer GrantsTags;

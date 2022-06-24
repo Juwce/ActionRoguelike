@@ -4,6 +4,7 @@
 #include "TActionEffect.h"
 
 #include "TActionComponent.h"
+#include "GameFramework/GameStateBase.h"
 
 UTActionEffect::UTActionEffect()
 {
@@ -21,6 +22,7 @@ void UTActionEffect::StartAction_Implementation(AActor* InstigatorActor)
 			this, GET_FUNCTION_NAME_CHECKED(UTActionEffect, StopAction), InstigatorActor);
 		GetWorld()->GetTimerManager().SetTimer(DurationHandle, DurationDelegate, Duration, false);
 	}
+	// ...else indefinite (until stopped)
 
 	if (Period > 0.f)
 	{
@@ -48,6 +50,18 @@ void UTActionEffect::StopAction_Implementation(AActor* InstigatorActor)
 	{
 		OwningActionComp->RemoveAction(this);
 	}
+}
+
+float UTActionEffect::GetTimeRemaining() const
+{
+	const AGameStateBase* GS = GetWorld()->GetGameState<AGameStateBase>();
+	if (GS)
+	{
+		const float EndTime = TimeStarted + Duration;
+		return EndTime - GS->GetServerWorldTimeSeconds();
+	}
+
+	return Duration;
 }
 
 void UTActionEffect::ExecutePeriodicEffect_Implementation(AActor* InstigatorActor)
