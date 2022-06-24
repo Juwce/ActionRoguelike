@@ -61,6 +61,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
 	bool bAutoStart;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	UTexture2D* Icon;
+
 protected:
 
 	/* Tags added to owning actor when activated, removed when action stops or completes */
