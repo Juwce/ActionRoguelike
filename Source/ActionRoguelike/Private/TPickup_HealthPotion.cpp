@@ -7,6 +7,8 @@
 #include "TAttributeComponent.h"
 #include "Kismet/GameplayStatics.h"
 
+#define LOCTEXT_NAMESPACE "InteractableActors"
+
 // Sets default values
 ATPickup_HealthPotion::ATPickup_HealthPotion()
 {
@@ -31,6 +33,18 @@ void ATPickup_HealthPotion::DoPickup(APawn* InstigatorPawn)
 	HealPawn(InstigatorPawn);
 }
 
+FText ATPickup_HealthPotion::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	const UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(InstigatorPawn);
+	if (AttributeComp && AttributeComp->GetHealth() == AttributeComp->GetHealthMax())
+	{
+		return LOCTEXT("HealthPotion_FullHealthWarning", "Already at full health");
+	}
+
+	return FText::Format(LOCTEXT("HealthPotion_FullHealthWarning",
+		"Costs {0} Credits. Restores {1} Health."), InteractionCreditCost, HealthGiven);
+}
+
 void ATPickup_HealthPotion::HealPawn(const APawn* Pawn)
 {
 	UTAttributeComponent* AttributeComp = UTAttributeComponent::GetAttributes(Pawn);
@@ -39,3 +53,5 @@ void ATPickup_HealthPotion::HealPawn(const APawn* Pawn)
 		 AttributeComp->ApplyHealthChange(this, HealthGiven);
 	}
 }
+
+#undef LOCTEXT_NAMESPACE

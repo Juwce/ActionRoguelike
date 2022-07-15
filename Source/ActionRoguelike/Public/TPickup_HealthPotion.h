@@ -19,6 +19,8 @@ protected:
 	virtual bool CanPickup(const APawn* InstigatorPawn) override;
 
 	virtual void DoPickup(APawn* InstigatorPawn) override;
+
+	virtual FText GetInteractText_Implementation(APawn* InstigatorPawn) override;
 	
 	void HealPawn(const APawn* Pawn);
 	

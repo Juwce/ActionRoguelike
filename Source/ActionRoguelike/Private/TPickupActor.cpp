@@ -50,6 +50,11 @@ void ATPickupActor::Interact_Implementation(APawn* InstigatorPawn)
 	}
 }
 
+FText ATPickupActor::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	return FText::GetEmpty();
+}
+
 bool ATPickupActor::CanPickup(const APawn* InstigatorPawn)
 {
 	const ATPlayerController* InstigatorPlayer = Cast<ATPlayerController>(InstigatorPawn->GetController());
