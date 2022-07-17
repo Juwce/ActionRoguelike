@@ -9,9 +9,11 @@
 #include "TAttributeComponent.h"
 #include "TCharacter.h"
 #include "TGameplayInterface.h"
+#include "TMonsterData.h"
 #include "TPickupSpawnVolume.h"
 #include "TPlayerController.h"
 #include "TPlayerState.h"
+#include "TMonsterData.h"
 #include "TSaveGame.h"
 #include "AI/TAICharacter.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
@@ -199,13 +201,25 @@ void ATGameModeBase::OnSpawnBotQueryComplete(UEnvQueryInstanceBlueprintWrapper* 
 	}
 
 	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
-	if (!Locations.IsValidIndex(0))
+	if (Locations.IsValidIndex(0))
+	{
+		if (MonsterTable)
+		{
+			TArray<FMonsterInfoRow*> Rows;
+			MonsterTable->GetAllRows("", Rows);
+
+			// Get random index
+			const int32 RandomIndex = FMath::RandRange(0, Rows.Num() - 1);
+			const FMonsterInfoRow* SelectedRow = Rows[RandomIndex];
+			GetWorld()->SpawnActor<AActor>(SelectedRow->MonsterData->MonsterClass, Locations[0], FRotator::ZeroRotator);
+		}
+	}
+	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Spawn bot EQS Query could not find a suitable spawn location."));
 		return;
 	}
 	
-	GetWorld()->SpawnActor<AActor>(SpawnedBotClass, Locations[0], FRotator::ZeroRotator);
 	DrawDebugSphere(GetWorld(), Locations[0], 50.f, 20, FColor::Blue, false, 60.f);
 }
 

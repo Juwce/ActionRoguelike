@@ -3,17 +3,58 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "EnvironmentQuery/EnvQueryInstanceBlueprintWrapper.h"
 #include "GameFramework/GameModeBase.h"
 #include "TGameModeBase.generated.h"
 
+class UTMonsterData;
 class UTSaveGame;
 class ATPlayerState;
 class ATPickupActor;
 class UEnvQuery;
+class UDataTable;
 /**
  * 
  */
+
+/* DataTable Row for spawning monsters in game mode  */
+USTRUCT(BlueprintType)
+struct FMonsterInfoRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+
+	FMonsterInfoRow()
+	{
+		Weight = 1.0f;
+		SpawnCost = 5.0f;
+		KillReward = 20.0f;
+	}
+
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	// FPrimaryAssetId MonsterId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UTMonsterData* MonsterData;
+
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	// TSubclassOf<AActor> MonsterClass;
+
+	/* Relative chance to pick this monster */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Weight;
+
+	/* Points required by gamemode to spawn this unit. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float SpawnCost;
+
+	/* Amount of credits awarded to killer of this unit.  */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float KillReward;
+
+};
 
 
 UCLASS()
@@ -62,6 +103,9 @@ public:
 
 	int32 GetNumAliveBots();
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UDataTable* MonsterTable;
+
 protected:
 	void TrySpawnBot();
 	
@@ -75,10 +119,6 @@ protected:
 	// Frequency at which to attempt to spawn a bot
 	UPROPERTY(EditDefaultsOnly, Category = "Bot Spawns")
 	float SpawnBotIntervalSeconds;
-
-	// The bot actor class to spawn
-	UPROPERTY(EditDefaultsOnly, Category = "Bot Spawns")
-	TSubclassOf<AActor> SpawnedBotClass;
 
 	// Max amount of bots allowed to spawn. Overridden by DifficultyCurve if that is set.
 	UPROPERTY(EditDefaultsOnly, Category = "Bot Spawns")
