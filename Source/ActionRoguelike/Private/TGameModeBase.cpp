@@ -15,7 +15,9 @@
 #include "TPlayerState.h"
 #include "TMonsterData.h"
 #include "TSaveGame.h"
+#include "ActionRoguelike/ActionRoguelike.h"
 #include "AI/TAICharacter.h"
+#include "Engine/AssetManager.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
 #include "GameFramework/GameStateBase.h"
@@ -158,8 +160,6 @@ int32 ATGameModeBase::GetNumAliveBots()
 		}
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Found %i out of max %i alive bots."), NumAliveBots, GetMaxBotCount());
-
 	return NumAliveBots;
 }
 
@@ -171,9 +171,9 @@ void ATGameModeBase::TrySpawnBot()
 		return;
 	}
 	
-	GetMaxBotCount();
-	
 	const int32 NumAliveBots = GetNumAliveBots();
+	UE_LOG(LogTemp, Warning, TEXT("Found %i out of max %i alive bots."), NumAliveBots, GetMaxBotCount());
+
 	if (NumAliveBots >= GetMaxBotCount())
 	{
 		UE_LOG(LogTemp, Warning,
@@ -211,7 +211,21 @@ void ATGameModeBase::OnSpawnBotQueryComplete(UEnvQueryInstanceBlueprintWrapper* 
 			// Get random index
 			const int32 RandomIndex = FMath::RandRange(0, Rows.Num() - 1);
 			const FMonsterInfoRow* SelectedRow = Rows[RandomIndex];
-			GetWorld()->SpawnActor<AActor>(SelectedRow->MonsterData->MonsterClass, Locations[0], FRotator::ZeroRotator);
+
+			// load MonsterData asset
+			UAssetManager* Manager = UAssetManager::GetIfValid();
+			if (Manager)
+			{
+				// out of scope from lectures, but can be used to specify which data asset members to load from the asset
+				const TArray<FName> Bundles;
+				FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(
+					this,
+					&ATGameModeBase::OnMonsterLoaded,
+					SelectedRow->MonsterId,
+					Locations[0]);
+				
+				Manager->LoadPrimaryAsset(SelectedRow->MonsterId, Bundles, Delegate);
+			}
 		}
 	}
 	else
@@ -221,6 +235,53 @@ void ATGameModeBase::OnSpawnBotQueryComplete(UEnvQueryInstanceBlueprintWrapper* 
 	}
 	
 	DrawDebugSphere(GetWorld(), Locations[0], 50.f, 20, FColor::Blue, false, 60.f);
+}
+
+void ATGameModeBase::OnMonsterLoaded(FPrimaryAssetId MonsterAssetId, FVector SpawnLocation)
+{
+	const UAssetManager* Manager = UAssetManager::GetIfValid();
+	if (Manager)
+	{
+		const UTMonsterData* MonsterData = Cast<UTMonsterData>(Manager->GetPrimaryAssetObject(MonsterAssetId));
+		if (ensure(MonsterData))
+		{
+			DoSpawnBot(MonsterData, SpawnLocation);
+		}
+	}
+}
+
+
+void ATGameModeBase::DoSpawnBot(const UTMonsterData* MonsterData, const FVector SpawnLocation)
+{
+	AActor* NewBot = GetWorld()->SpawnActor<AActor>(
+		MonsterData->MonsterClass,
+		SpawnLocation,
+		FRotator::ZeroRotator);
+			
+	if (NewBot)
+	{
+		LogOnScreen(this,
+		            FString::Printf(TEXT("Spawned enemy: %s (%s)"),
+		                            *GetNameSafe(NewBot),
+		                            *GetNameSafe(MonsterData)));
+
+		UTActionComponent* NewBotActionComp = UTActionComponent::GetActionComponent(NewBot);
+		if (NewBotActionComp)
+		{
+			for (const TSubclassOf<UTAction> ActionClass : MonsterData->Actions)
+			{
+				NewBotActionComp->AddAction(NewBot, ActionClass);
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning,
+			       TEXT("Spawned enemy %s does not have an ActionComponent, but actions were specified "
+				       " in its MonsterData (%s). No actions will be granted to the spawned enemy."),
+			       *GetNameSafe(NewBot),
+			       *GetNameSafe(MonsterData));
+		}
+	}
 }
 
 

@@ -33,12 +33,15 @@ public:
 		KillReward = 20.0f;
 	}
 
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	// FPrimaryAssetId MonsterId;
-
+	// Final implementation, using asset manager
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UTMonsterData* MonsterData;
+	FPrimaryAssetId MonsterId;
 
+	// Second iteration, using a data table of data assets
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	// UTMonsterData* MonsterData;
+
+	// First iteration, just specifying the class to spawn
 	// UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	// TSubclassOf<AActor> MonsterClass;
 
@@ -108,9 +111,13 @@ public:
 
 protected:
 	void TrySpawnBot();
-	
+
 	UFUNCTION()
 	void OnSpawnBotQueryComplete(UEnvQueryInstanceBlueprintWrapper* EnvQueryInstanceBlueprintWrapper, EEnvQueryStatus::Type Arg);
+
+	void OnMonsterLoaded(FPrimaryAssetId MonsterAssetId, FVector SpawnLocation);
+	
+	void DoSpawnBot(const UTMonsterData* MonsterData, const FVector SpawnLocation);
 
 	// EQS query that picks a location to spawn the bot
 	UPROPERTY(EditDefaultsOnly, Category = "Bot Spawns")
