@@ -54,6 +54,12 @@ void ATGameModeBase::InitGame(const FString& MapName, const FString& Options, FS
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
+	FString SelectedSaveSlot = UGameplayStatics::ParseOption(Options, "SaveGame");
+	if (SelectedSaveSlot.Len() > 0)
+	{
+		SaveSlotName = SelectedSaveSlot;
+	}
+
 	LoadSaveGame();	
 }
 
@@ -167,16 +173,16 @@ void ATGameModeBase::TrySpawnBot()
 {
 	if (!CVarSpawnBots.GetValueOnGameThread())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Bot spawning disabled via cvar \"CVarSpawnBots\""));
+		UE_LOG(LogTemp, Log, TEXT("Bot spawning disabled via cvar \"CVarSpawnBots\""));
 		return;
 	}
 	
 	const int32 NumAliveBots = GetNumAliveBots();
-	UE_LOG(LogTemp, Warning, TEXT("Found %i out of max %i alive bots."), NumAliveBots, GetMaxBotCount());
+	UE_LOG(LogTemp, Log, TEXT("Found %i out of max %i alive bots."), NumAliveBots, GetMaxBotCount());
 
 	if (NumAliveBots >= GetMaxBotCount())
 	{
-		UE_LOG(LogTemp, Warning,
+		UE_LOG(LogTemp, Log,
 			TEXT("At maximum bot capacity (%i / %i). Skipping bot spawn."), NumAliveBots, GetMaxBotCount());
 		return;
 	}

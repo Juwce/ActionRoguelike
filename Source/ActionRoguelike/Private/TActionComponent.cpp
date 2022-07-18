@@ -7,6 +7,8 @@
 #include "Engine/ActorChannel.h"
 #include "Net/UnrealNetwork.h"
 
+DECLARE_CYCLE_STAT(TEXT("StartActionByName"), STAT_StartActionByName, STATGROUP_Tim)
+
 static TAutoConsoleVariable<bool> CVarDebugActiveGameplayTags(
 	TEXT("ti.DebugActiveGameplayTags"),
 	false,
@@ -44,8 +46,23 @@ void UTActionComponent::BeginPlay()
 	}
 }
 
+void UTActionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	// StopAction removes the action from the actions array, so we need to work with a copy of it to properly iterate
+	TArray<UTAction*> ActionsCopy = Actions;
+	for (UTAction* Action : ActionsCopy)
+	{
+		if (Action && Action->IsRunning())
+		{
+			Action->StopAction(GetOwner());
+		}
+	}
+	
+	Super::EndPlay(EndPlayReason);
+}
+
 void UTActionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-	FActorComponentTickFunction* ThisTickFunction)
+                                      FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -132,6 +149,8 @@ bool UTActionComponent::HasAction(const TSubclassOf<UTAction> ActionClass) const
 
 bool UTActionComponent::StartActionByName(AActor* Instigator, const FName ActionName)
 {
+	SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
+	
 	for (UTAction* Action : Actions)
 	{
 		if (Action->ActionName == ActionName)
@@ -149,6 +168,9 @@ bool UTActionComponent::StartActionByName(AActor* Instigator, const FName Action
 			{
 				ServerStartAction(Instigator, ActionName);
 			}
+
+			// Bookmark for Unreal Insights
+			TRACE_BOOKMARK(TEXT("StartAction::%s"), *GetNameSafe(Action));
 			
 			Action->StartAction(Instigator);
 			return true;

@@ -4,11 +4,14 @@
 #include "TPickupSpawnVolume.h"
 
 #include "DrawDebugHelpers.h"
-#include "LevelEditor.h"
 #include "TActorSpawnHelpers.h"
 #include "TPickupActor.h"
 #include "Components/BoxComponent.h"
 #include "Engine/Selection.h"
+
+#if WITH_EDITOR
+#include "LevelEditor.h"
+#endif
 
 ATPickupSpawnVolume::ATPickupSpawnVolume()
 {

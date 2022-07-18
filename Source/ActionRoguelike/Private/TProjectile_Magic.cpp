@@ -15,6 +15,7 @@ ATProjectile_Magic::ATProjectile_Magic()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	InitialLifeSpan = 10.f;
 	Damage = -20.f;
 	bHasBeenParried = false;
 	bEnsureInstigator = true;

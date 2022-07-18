@@ -28,7 +28,7 @@ ATAICharacter::ATAICharacter()
 	ActionComp = CreateDefaultSubobject<UTActionComponent>("ActionComponent");
 
 	// We want projectiles and other dynamic objects to hit the character mesh, not the capsule
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+	// GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(true);
 
 	// Assigns AI controller to character when spawned (4.27 default is "Placed" only)
