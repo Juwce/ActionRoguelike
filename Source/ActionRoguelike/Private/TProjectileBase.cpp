@@ -51,8 +51,8 @@ void ATProjectileBase::BeginPlay()
 	
 	if (bEnsureInstigator)
 	{
-		ensureMsgf(GetInstigator(), TEXT("Magic projectiles must be spawned with an instigator by default, please set one,"
-										 " or change bEnsureInstigator to true"));
+		ensureMsgf(GetInstigator(), TEXT("Magic projectiles must be spawned with an instigator by default, please set "
+										"one, or change bEnsureInstigator to false"));
 	}
 }
 

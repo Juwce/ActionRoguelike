@@ -18,9 +18,11 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
 	virtual void Explode_Implementation() override;
 
 	void QueueTeleport();
+	
 	void TeleportInstigator();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -31,5 +33,4 @@ protected:
 
 private:
 	FTimerHandle TimerHandle;
-
 };

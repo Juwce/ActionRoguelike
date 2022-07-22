@@ -31,9 +31,9 @@ void UTAction_ProjectileAttack::StartAction_Implementation(AActor* InstigatorAct
 
 void UTAction_ProjectileAttack::StopAction_Implementation(AActor* InstigatorActor)
 {
-	Super::StopAction_Implementation(InstigatorActor);
-
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+	
+	Super::StopAction_Implementation(InstigatorActor);
 }
 
 void UTAction_ProjectileAttack::StartAttack(ATCharacter* InstigatorCharacter)
@@ -41,7 +41,8 @@ void UTAction_ProjectileAttack::StartAttack(ATCharacter* InstigatorCharacter)
 	InstigatorCharacter->PlayAnimMontage(AttackAnim);
 	UGameplayStatics::SpawnEmitterAttached(
 		SpellCastVFX, InstigatorCharacter->GetMesh(), InstigatorCharacter->GetHandSocketName());
-		
+
+	// server
 	if (InstigatorCharacter->HasAuthority())
 	{
 		FTimerDelegate TimerDel;
@@ -54,7 +55,8 @@ void UTAction_ProjectileAttack::SpawnProjectile(ATCharacter* InstigatorCharacter
 {
 	if (ensure(ProjectileClass))
 	{
-			const FVector HandLocation = InstigatorCharacter->GetMesh()->GetSocketLocation(InstigatorCharacter->GetHandSocketName()); 
+			const FVector HandLocation =
+				InstigatorCharacter->GetMesh()->GetSocketLocation(InstigatorCharacter->GetHandSocketName()); 
 
 			FVector Target;
 			ComputeAttackTarget(InstigatorCharacter, Target);
@@ -82,6 +84,7 @@ bool UTAction_ProjectileAttack::ComputeAttackTarget(ATCharacter* InstigatorChara
 		return false;
 	}
 
+	// Trace directly down the camera's line of site (player's 'reticle')
 	const FVector CameraLocation = CameraComp->GetComponentLocation();
 	const FVector ControlRotation = InstigatorCharacter->GetControlRotation().Vector();
 	const FVector TraceEnd = CameraLocation + (ControlRotation * MaxAttackTraceDistance);

@@ -29,8 +29,8 @@ void ATProjectile_Dash::BeginPlay()
 
 	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
 
-	GetWorldTimerManager().SetTimer(
-		TimerHandle, this, &ATProjectile_Dash::QueueTeleport, DelayBetweenSpawnAndExplosion, false);
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &ATProjectile_Dash::QueueTeleport,
+		DelayBetweenSpawnAndExplosion, false);
 }
 
 // Triggered by parent class On Hit
@@ -47,8 +47,8 @@ void ATProjectile_Dash::QueueTeleport()
 	MovementComp->StopMovementImmediately();
 	SetActorEnableCollision(false);
 	
-	GetWorldTimerManager().SetTimer(
-		TimerHandle, this, &ATProjectile_Dash::TeleportInstigator, DelayBetweenExplosionAndTeleport, false);
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &ATProjectile_Dash::TeleportInstigator,
+		DelayBetweenExplosionAndTeleport, false);
 }
 
 void ATProjectile_Dash::TeleportInstigator()
@@ -59,7 +59,7 @@ void ATProjectile_Dash::TeleportInstigator()
 
 	if (ensure(ActorToTeleport))
 	{
-		GetInstigator()->TeleportTo(TeleportLocation, TeleportRotation, false, false);
+		ActorToTeleport->TeleportTo(TeleportLocation, TeleportRotation, false, false);
 	}
 	
 	Destroy();
