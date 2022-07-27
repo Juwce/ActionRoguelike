@@ -23,6 +23,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "AI")
 	FBlackboardKeySelector AttackRangeKey;
+	
+	UPROPERTY(EditAnywhere, Category = "AI")
+	FBlackboardKeySelector TargetActorKey;
 
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float AttackRange;

@@ -60,6 +60,7 @@ void ATAICharacter::PostInitializeComponents()
 	{
 		PawnSensingComp->OnSeePawn.AddDynamic(this, &ATAICharacter::OnPawnSeen);
 	}
+	
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ATAICharacter::OnHealthChanged);
 }
 
@@ -129,9 +130,8 @@ void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponen
 			this, HealthBarLocationComp->GetRelativeLocation(),
 			HealthBarLifetimeHandle, HealthBarLifetimeSeconds);
 
-		if (!OwningComp->IsAlive())
+		if (NewHealth < 0.f || FMath::IsNearlyEqual(NewHealth, 0.f))
 		{
-			// TODO: replicate death
 			Die();
 		}
 		else if (HasAuthority() && InstigatorActor != this)
@@ -144,6 +144,16 @@ void ATAICharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponen
 
 void ATAICharacter::Die()
 {
+	// ragdoll - force all bones to use physics (bones can use physics or animation settings)
+	GetMesh()->SetAllBodiesSimulatePhysics(true);
+	GetMesh()->SetCollisionProfileName("Ragdoll");
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCharacterMovement()->DisableMovement();
+
+	UTWorldUserWidget::DeactivateWorldWidgetAndTimer(ActiveHealthBarWidget, HealthBarLifetimeHandle);
+	UTWorldUserWidget::DeactivateWorldWidgetAndTimer(ActivePlayerSpottedWidget, PlayerSpottedWidgetLifetimeHandle);
+	
 	if (HasAuthority())
 	{
 		if (ensure(AttributeComp))
@@ -157,21 +167,12 @@ void ATAICharacter::Die()
 		{
 			AIController->GetBrainComponent()->StopLogic("Killed");
 		}
+
+		PawnSensingComp->SetSensingUpdatesEnabled(false);
 		
 		// set lifespan (time to ragdoll and see corpse before destroying it)
 		SetLifeSpan(OnDeathLifeSpanDuration);
 	}
-
-	// ragdoll - force all bones to use physics (bones can use physics or animation settings)
-	GetMesh()->SetAllBodiesSimulatePhysics(true);
-	GetMesh()->SetCollisionProfileName("Ragdoll");
-
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetCharacterMovement()->DisableMovement();
-
-	UTWorldUserWidget::DeactivateWorldWidgetAndTimer(ActiveHealthBarWidget, HealthBarLifetimeHandle);
-	UTWorldUserWidget::DeactivateWorldWidgetAndTimer(ActivePlayerSpottedWidget, PlayerSpottedWidgetLifetimeHandle);
-	
 }
 
 

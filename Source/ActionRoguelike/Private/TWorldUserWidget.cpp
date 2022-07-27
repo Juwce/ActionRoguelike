@@ -61,6 +61,7 @@ void UTWorldUserWidget::DeactivateWorldWidget(UTWorldUserWidget*& ActiveWidgetRe
 	if (IsValid(ActiveWidgetRef))
 	{
 		ActiveWidgetRef->RemoveFromParent();
+		// required for reflection system to delete the widget
 		ActiveWidgetRef = nullptr;
 	}
 }

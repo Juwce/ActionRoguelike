@@ -26,20 +26,20 @@ void UTBTService_CheckAttackRange::UpdateWithinRangeKey(UBehaviorTreeComponent& 
 	{
 		return;
 	}
-		
-	AActor* TargetActor = Cast<AActor>(BlackboardComp->GetValueAsObject("TargetActor"));
+
+	const AActor* TargetActor = Cast<AActor>(BlackboardComp->GetValueAsObject(TargetActorKey.SelectedKeyName));
 	if (!TargetActor)
 	{
 		return;
 	}
-		
-	AAIController* TargetController = OwnerComp.GetAIOwner();
+
+	const AAIController* TargetController = OwnerComp.GetAIOwner();
 	if (!ensure(TargetController))
 	{
 		return;
 	}
-		
-	APawn* AIPawn = TargetController->GetPawn();
+
+	const APawn* AIPawn = TargetController->GetPawn();
 	if (!ensure(AIPawn))
 	{
 		return;

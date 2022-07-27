@@ -11,6 +11,8 @@
 UTBTTask_RangedAttack::UTBTTask_RangedAttack()
 {
 	MaxBulletSpreadDegrees = 2.f;
+	
+	MuzzleSocketName = "Muzzle_01";
 }
 
 EBTNodeResult::Type UTBTTask_RangedAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -32,7 +34,8 @@ EBTNodeResult::Type UTBTTask_RangedAttack::PerformRangedAttack(UBehaviorTreeComp
 		return EBTNodeResult::Failed;
 	}
 
-	const AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("TargetActor"));
+	const AActor* TargetActor = Cast<AActor>(
+		OwnerComp.GetBlackboardComponent()->GetValueAsObject(TargetActorKey.SelectedKeyName));
 	if (!TargetActor)
 	{
 		return EBTNodeResult::Failed;
@@ -43,7 +46,7 @@ EBTNodeResult::Type UTBTTask_RangedAttack::PerformRangedAttack(UBehaviorTreeComp
 		return EBTNodeResult::Failed;
 	}
 
-	const FVector MuzzleLocation = MyCharacter->GetMesh()->GetSocketLocation("Muzzle_01");
+	const FVector MuzzleLocation = MyCharacter->GetMesh()->GetSocketLocation(MuzzleSocketName);
 	const FVector Direction = TargetActor->GetActorLocation() - MuzzleLocation;
 	FRotator MuzzleRotation = Direction.Rotation();
 
@@ -53,7 +56,8 @@ EBTNodeResult::Type UTBTTask_RangedAttack::PerformRangedAttack(UBehaviorTreeComp
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.Instigator = MyCharacter;
-	const AActor* NewProjectile = GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
+	const AActor* NewProjectile = GetWorld()->SpawnActor<AActor>(
+		ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
 
 	return NewProjectile ? EBTNodeResult::Succeeded : EBTNodeResult::Failed;
 }

@@ -8,6 +8,7 @@
 #include "TProjectile_Dash.h"
 #include "TInteractionComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -160,11 +161,14 @@ void ATCharacter::TriggerHitFlashEffect()
 void ATCharacter::OnHealthChanged(AActor* InstigatorActor, UTAttributeComponent* OwningComp, float NewHealth,
                                   float Delta)
 {
+	// die
 	if (NewHealth <= 0.f && Delta < 0.f)
 	{
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
 		SetLifeSpan(LifeSpanOnDeathSeconds);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	}
 
 	if (Delta < 0.f)

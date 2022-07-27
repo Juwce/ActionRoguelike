@@ -29,4 +29,10 @@ protected:
 	// only in the up/left/right direction(s).
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float MaxBulletSpreadDegrees;
+
+	UPROPERTY(EditAnywhere, Category = "AI")
+	FBlackboardKeySelector TargetActorKey;
+
+	UPROPERTY(EditAnywhere, Category = "AI")
+	FName MuzzleSocketName;
 };
